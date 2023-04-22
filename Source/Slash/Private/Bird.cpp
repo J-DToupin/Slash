@@ -26,7 +26,7 @@ ABird::ABird()
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(GetRootComponent());
 	SpringArmComponent->bUsePawnControlRotation = true;
-	SpringArmComponent->TargetArmLength = 300.f;
+	SpringArmComponent->TargetArmLength = 400.f;
 
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ViewCamera"));
 	ViewCamera ->SetupAttachment(SpringArmComponent);
