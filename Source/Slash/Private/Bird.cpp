@@ -29,9 +29,9 @@ ABird::ABird()
 	SpringArmComponent->TargetArmLength = 400.f;
 
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ViewCamera"));
-	ViewCamera ->SetupAttachment(SpringArmComponent);
+	ViewCamera->SetupAttachment(SpringArmComponent);
 
-	AutoPossessPlayer = EAutoReceiveInput::Player0;
+	//AutoPossessPlayer = EAutoReceiveInput::Player0;
 	bUseControllerRotationPitch = true;
 	bUseControllerRotationYaw = true;
 	

@@ -1,46 +1,43 @@
-﻿	// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
-#include "Bird.generated.h"
+#include "GameFramework/Character.h"
+#include "SlashCharacter.generated.h"
 
-class UCameraComponent;
-class USpringArmComponent;
 struct FInputActionValue;
 class UInputAction;
-class UCapsuleComponent;
-class USkeletalMeshComponent;
 class UInputMappingContext;
+class UCameraComponent;
+class USpringArmComponent;
+class UGroomComponent;
+
 UCLASS()
-class SLASH_API ABird : public APawn
+class SLASH_API ASlashCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
-	ABird();
+	ASlashCharacter();
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	UCapsuleComponent* CapsuleComponent;
-
-	UPROPERTY(VisibleAnywhere)
-	USkeletalMeshComponent* BirdMesh;
-
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* ViewCamera;
 
+	UPROPERTY(VisibleAnywhere, Category=Hair)
+	UGroomComponent* Hair;
+
+	UPROPERTY(VisibleAnywhere, Category=Hair)
+	UGroomComponent* Eyebrows;
+
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	UInputMappingContext* BirdMappingContext;
+	UInputMappingContext* InputMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
 	UInputAction* MoveAction;
@@ -48,16 +45,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
 	UInputAction* LookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
+	UInputAction* JumpAction;
 	
-	void Move(const FInputActionValue& Value);
+	
+	virtual void BeginPlay() override;
 
-	
+	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 
-public:
-	// Called every frame
+public:	
+	
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
+	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 };
