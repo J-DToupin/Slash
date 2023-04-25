@@ -3,6 +3,8 @@
 
 
 #include "Slash/Public/Items/Item.h"
+
+#include "Components/SphereComponent.h"
 #include "Slash/DebugMacros.h"
 
 
@@ -14,6 +16,9 @@ AItem::AItem() : Amplitude(0.25f), TimeConstant(5.0f)
 
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMeshComponent"));
 	RootComponent = ItemMesh;
+
+	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
+	SphereComponent->SetupAttachment(GetRootComponent());
 	
 
 }
@@ -23,28 +28,8 @@ void AItem::BeginPlay()
 {
 	Super::BeginPlay();
 
-	int32 AvgInt = Avg<int32>(1, 3);
-	UE_LOG(LogTemp, Warning, TEXT("ABG of 1 and 3 ; %d"), AvgInt)
-
-	UE_LOG(LogTemp,Warning, TEXT("Begin Play Called!"))
-
-	
-
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(1, 60.f,FColor::Orange,TEXT("Item OnScreen Message!"));
-	}
-
-	SetActorLocation(FVector(0.f,0.f, 50.f));
-
-	FVector Location{GetActorLocation()};
-	FVector Forward{GetActorForwardVector()};
-	
-	// Draw une sphere  avec une macro dans DebugMacros.h
-	DRAW_SPHERE(Location, FColor::Red)
-	// DRAW_LINE(Location, Location + Forward * 100.f)
-	// DRAW_POINT(Location + Forward * 100.f)
-	DRAW_VECTOR(Location, Location + Forward * 100.f, FColor::Blue)
+	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
+	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
 	
 }
 
@@ -58,6 +43,23 @@ float AItem::TransformedCos()
 	return Amplitude * FMath::Cos(RunningTime * TimeConstant);
 }
 
+void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	//const FString OtherName = OtherActor->GetName();
+
+	GEngine->AddOnScreenDebugMessage(1,30.f, FColor::Red, TEXT("In"));
+}
+
+void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	//const FString OtherName = OtherActor->GetName();
+
+	GEngine->AddOnScreenDebugMessage(1,30.f, FColor::Red, TEXT("Out"));
+}
+
+
 // Called every frame
 void AItem::Tick(float DeltaTime)
 {
@@ -68,7 +70,7 @@ void AItem::Tick(float DeltaTime)
 	float RotationRate = 45.f;
 
 	// MovemntRate * Deltatime (cm/s) * (s/frame) = (cm/frame)
-	AddActorWorldOffset(FVector(MovementRate * DeltaTime,0.f,0.f));
+	//AddActorWorldOffset(FVector(MovementRate * DeltaTime,0.f,0.f));
 	AddActorWorldRotation(FRotator(0.f, RotationRate * DeltaTime, 0.f));
 
 	RunningTime += DeltaTime;
