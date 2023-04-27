@@ -4,6 +4,7 @@
 
 #include "Slash/Public/Items/Item.h"
 
+#include "Characters/SlashCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Slash/DebugMacros.h"
 
@@ -46,7 +47,10 @@ float AItem::TransformedCos()
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	//const FString OtherName = OtherActor->GetName();
+	if (ASlashCharacter* SlashCharacter = Cast<ASlashCharacter>(OtherActor))
+	{
+		SlashCharacter->SetOverlappingItem(this);
+	}
 
 	GEngine->AddOnScreenDebugMessage(1,30.f, FColor::Red, TEXT("In"));
 }
@@ -54,7 +58,10 @@ void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	//const FString OtherName = OtherActor->GetName();
+	if (ASlashCharacter* SlashCharacter = Cast<ASlashCharacter>(OtherActor))
+	{
+		SlashCharacter->SetOverlappingItem(nullptr);
+	}
 
 	GEngine->AddOnScreenDebugMessage(1,30.f, FColor::Red, TEXT("Out"));
 }
@@ -71,7 +78,7 @@ void AItem::Tick(float DeltaTime)
 
 	// MovemntRate * Deltatime (cm/s) * (s/frame) = (cm/frame)
 	//AddActorWorldOffset(FVector(MovementRate * DeltaTime,0.f,0.f));
-	AddActorWorldRotation(FRotator(0.f, RotationRate * DeltaTime, 0.f));
+	//AddActorWorldRotation(FRotator(0.f, RotationRate * DeltaTime, 0.f));
 
 	RunningTime += DeltaTime;
 	//float DeltaZ = Amplitude * FMath::Sin(RunningTime * TimeConstant);

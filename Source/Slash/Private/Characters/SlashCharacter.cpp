@@ -9,6 +9,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GroomComponent.h"
+#include "Animation/AnimInstance.h"
+#include "Items/Weapons/Weapon.h"
 
 // Sets default values
 ASlashCharacter::ASlashCharacter()
@@ -83,6 +85,54 @@ void ASlashCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void ASlashCharacter::Attack()
+{
+	if (ActionState == EActionState::EAS_Unoccupied)
+	{
+		PLayAttackMontage();
+		ActionState = EActionState::EAS_Attacking;
+	}
+	
+}
+
+void ASlashCharacter::PicUp()
+{
+
+	if (AWeapon* OverLappinWeapon = Cast<AWeapon>(OverLappingItem))
+	{
+		OverLappinWeapon->Equip(GetMesh(), FName("RightHandSocket"));
+		CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+	}
+}
+
+void ASlashCharacter::PLayAttackMontage() const
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	
+	if (AnimInstance && AttackMontage)
+	{
+		AnimInstance->Montage_Play(AttackMontage);
+		const int32 Selection = FMath::RandRange(0,1);
+		FName SelectionName;
+		switch (Selection)
+		{
+		case 0:
+			SelectionName = "Attack1";
+			break;
+
+		case 1:
+			SelectionName = "Attack2";
+			break;
+
+		default:
+			SelectionName = "Attack1";
+			break;
+		}
+
+		AnimInstance->Montage_JumpToSection(SelectionName, AttackMontage);
+	}
+}
+
 // Called every frame
 void ASlashCharacter::Tick(float DeltaTime)
 {
@@ -100,6 +150,9 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		
 		Input->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		Input->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+
+		Input->BindAction(PicUpAction, ETriggerEvent::Started, this, &ASlashCharacter::PicUp);
+		Input->BindAction(AttackAction, ETriggerEvent::Started, this, &ASlashCharacter::Attack);
 	}
 
 }
