@@ -6,6 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "Item.generated.h"
 
+UENUM(BlueprintType)
+enum class EItemState : uint8
+{
+	Eis_Unequipped UMETA(DisplayName = "Unequipped"), 
+	Eis_Equipped UMETA(DisplayName = "Equipped"),
+};
+
 class USphereComponent;
 UCLASS()
 class SLASH_API AItem : public AActor
@@ -51,6 +58,8 @@ protected:
 	UFUNCTION()
 	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	EItemState ItemState = EItemState::Eis_Unequipped;
 
 	template<typename T>
 	T Avg(T First, T Second);

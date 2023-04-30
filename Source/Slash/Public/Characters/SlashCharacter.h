@@ -7,6 +7,7 @@
 #include "Characters/CharracterTypes.h"
 #include "SlashCharacter.generated.h"
 
+class AWeapon;
 struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
@@ -27,6 +28,8 @@ public:
 private:
 
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+	
+	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
 	
 	UPROPERTY(VisibleAnywhere)
@@ -50,6 +53,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category=Montages)
 	UAnimMontage* AttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category=Montages)
+	UAnimMontage* EquipMontage;
+
+	UPROPERTY(VisibleAnywhere)
+	AWeapon* EquippedWeapon;
 
 protected:
 
@@ -80,12 +89,30 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Attack();
-	void PicUp();
+	void EKeyPressed();
 
 	/**
 	 * Play montage function
 	*/
 	void PLayAttackMontage() const;
+	void PLayEquipMontage(FName SelectionName) const;
+
+	UFUNCTION(BlueprintCallable)
+	void AttackEnd();
+
+	bool CanAttack() const;
+
+	bool CanDisarm() const;
+	bool CanArm() const;
+
+	UFUNCTION(BlueprintCallable)
+	void Disarm();
+
+	UFUNCTION(BlueprintCallable)
+	void Arm();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishEquipping();
 
 public:	
 	

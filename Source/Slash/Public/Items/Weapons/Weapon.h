@@ -28,6 +28,7 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	void AttachMeshToSocket(USceneComponent* InParent, FName InSocketName);
 
 	void Equip(USceneComponent* InParent, FName InSocketName);
 };

@@ -44,9 +44,15 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AWeapon::AttachMeshToSocket(USceneComponent* InParent, FName InSocketName)
+{
+	FAttachmentTransformRules const TransformRules(EAttachmentRule::SnapToTarget,true);
+	ItemMesh->AttachToComponent(InParent, TransformRules, InSocketName);
+}
+
 void AWeapon::Equip(USceneComponent* InParent, FName InSocketName)
 {
-	FAttachmentTransformRules TransformRules(EAttachmentRule::SnapToTarget,true);
-	ItemMesh->AttachToComponent(InParent, TransformRules, InSocketName);
+	AttachMeshToSocket(InParent, InSocketName);
+	ItemState = EItemState::Eis_Equipped;
 }
 

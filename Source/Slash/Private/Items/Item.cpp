@@ -6,7 +6,7 @@
 
 #include "Characters/SlashCharacter.h"
 #include "Components/SphereComponent.h"
-#include "Slash/DebugMacros.h"
+
 
 
 // Sets default values
@@ -73,18 +73,23 @@ void AItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	//Movement rate in units of cm/s
+	RunningTime += DeltaTime;
 	float MovementRate = 50.f;
 	float RotationRate = 45.f;
+
+	if (ItemState == EItemState::Eis_Unequipped)
+	{
+		AddActorWorldOffset(FVector(0.f,0.f, TransformedSin()));
+	}
+
 
 	// MovemntRate * Deltatime (cm/s) * (s/frame) = (cm/frame)
 	//AddActorWorldOffset(FVector(MovementRate * DeltaTime,0.f,0.f));
 	//AddActorWorldRotation(FRotator(0.f, RotationRate * DeltaTime, 0.f));
 
-	RunningTime += DeltaTime;
 	//float DeltaZ = Amplitude * FMath::Sin(RunningTime * TimeConstant);
 
-	//AddActorWorldOffset(FVector(0.f,0.f, DeltaZ));
-	
+
 	// DRAW_SPHERE_FRAME(GetActorLocation(),FColor::Green)
 	// DRAW_VECTOR_FRAME(GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 100, FColor::Blue)
 
