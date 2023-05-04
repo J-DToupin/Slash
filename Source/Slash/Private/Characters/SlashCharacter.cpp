@@ -10,6 +10,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GroomComponent.h"
 #include "Animation/AnimInstance.h"
+#include "Components/BoxComponent.h"
 #include "Items/Weapons/Weapon.h"
 
 // Sets default values
@@ -233,5 +234,13 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		Input->BindAction(AttackAction, ETriggerEvent::Started, this, &ASlashCharacter::Attack);
 	}
 
+}
+
+void ASlashCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable)
+{
+	if (EquippedWeapon && EquippedWeapon->GetWeaponBox())
+	{
+		EquippedWeapon->GetWeaponBox()->SetCollisionEnabled(CollisionEnable);
+	}
 }
 

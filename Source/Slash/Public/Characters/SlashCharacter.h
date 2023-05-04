@@ -33,52 +33,52 @@ private:
 	EActionState ActionState = EActionState::EAS_Unoccupied;
 	
 	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent* SpringArmComponent;
+	TObjectPtr<USpringArmComponent> SpringArmComponent;
 
 	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* ViewCamera;
+	TObjectPtr<UCameraComponent> ViewCamera;
 
 	UPROPERTY(VisibleAnywhere, Category=Hair)
-	UGroomComponent* Hair;
+	TObjectPtr<UGroomComponent> Hair;
 
 	UPROPERTY(VisibleAnywhere, Category=Hair)
-	UGroomComponent* Eyebrows;
+	TObjectPtr<UGroomComponent> Eyebrows;
 
 	UPROPERTY(VisibleInstanceOnly)
-	AItem* OverLappingItem;
+	TObjectPtr<AItem> OverLappingItem;
 
 	/**
 	 *Animation Montage
 	 */
 
 	UPROPERTY(EditDefaultsOnly, Category=Montages)
-	UAnimMontage* AttackMontage;
+	TObjectPtr<UAnimMontage> AttackMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category=Montages)
-	UAnimMontage* EquipMontage;
+	TObjectPtr<UAnimMontage> EquipMontage;
 
 	UPROPERTY(VisibleAnywhere)
-	AWeapon* EquippedWeapon;
+	TObjectPtr<AWeapon> EquippedWeapon;
 
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	UInputMappingContext* InputMappingContext;
+	TObjectPtr<UInputMappingContext> InputMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	UInputAction* MoveAction;
+	TObjectPtr<UInputAction> MoveAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	UInputAction* LookAction;
+	TObjectPtr<UInputAction> LookAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	UInputAction* JumpAction;
+	TObjectPtr<UInputAction> JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	UInputAction* PicUpAction;
+	TObjectPtr<UInputAction> PicUpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	UInputAction* AttackAction;
+	TObjectPtr<UInputAction> AttackAction;
 
 	
 	virtual void BeginPlay() override;
@@ -122,5 +122,9 @@ public:
 
 	FORCEINLINE void SetOverlappingItem(AItem* Item) {OverLappingItem = Item;}
 	FORCEINLINE ECharacterState GetCharacterState() const {return CharacterState;}
+
+	UFUNCTION(BlueprintCallable)
+	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable);
+	
 
 };

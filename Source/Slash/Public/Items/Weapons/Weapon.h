@@ -6,6 +6,8 @@
 #include "Items/Item.h"
 #include "Weapon.generated.h"
 
+class UBoxComponent;
+class USoundBase;
 UCLASS()
 class SLASH_API AWeapon : public AItem
 {
@@ -14,16 +16,32 @@ class SLASH_API AWeapon : public AItem
 public:
 	// Sets default values for this actor's properties
 	AWeapon();
+	
+private:
 
+	UPROPERTY(EditAnywhere, Category= "Weapon Properties")
+	TObjectPtr<USoundBase> EquipSound;
+
+	UPROPERTY(EditAnywhere, Category= "Weapon Properties")
+	TObjectPtr<UBoxComponent> WeaponBox;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> BoxTracesStart;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> BoxTracesEnd;
+	
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	UFUNCTION()
+	virtual void OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
-
-	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
+	// virtual void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	// 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
 
 public:
 	// Called every frame
@@ -31,4 +49,9 @@ public:
 	void AttachMeshToSocket(USceneComponent* InParent, FName InSocketName);
 
 	void Equip(USceneComponent* InParent, FName InSocketName);
+
+	FORCEINLINE UBoxComponent* GetWeaponBox() const
+	{
+		return WeaponBox;
+	}
 };

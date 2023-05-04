@@ -26,16 +26,15 @@ private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	float RunningTime{};
 	
-	UPROPERTY(VisibleAnywhere)
-	USphereComponent* SphereComponent;
-
-
 	
 
 protected:
 
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* ItemMesh;
+	TObjectPtr<USphereComponent> SphereComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> ItemMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Sine Parameters")
 	float Amplitude{};

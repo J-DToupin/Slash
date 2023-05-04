@@ -22,10 +22,10 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UPROPERTY(BlueprintReadOnly)
-	ASlashCharacter* SlashCharacter;
+	TObjectPtr<ASlashCharacter> SlashCharacter;
 
 	UPROPERTY(BlueprintReadOnly, Category=Movement)
-	UCharacterMovementComponent* CharacterMovementComponent;
+	TObjectPtr<UCharacterMovementComponent> CharacterMovementComponent;
 
 	UPROPERTY(BlueprintReadOnly, Category=Movement)
 	float GroundSpeed;
