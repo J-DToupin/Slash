@@ -25,6 +25,17 @@ void AEnemy::BeginPlay()
 	
 }
 
+void AEnemy::PLayHitMontage(const FName& SelectionName) const
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	
+	if (AnimInstance && HitMontage)
+	{
+		AnimInstance->Montage_Play(HitMontage);
+		AnimInstance->Montage_JumpToSection(SelectionName, HitMontage);
+	}
+}
+
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -38,5 +49,52 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AEnemy::GetHit(const FVector& ImpactPoint)
 {
 	DRAW_SPHERE(ImpactPoint, FColor::Red)
+	
+	const FVector Forward = GetActorForwardVector();
+	const FVector ImpactLowered(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
+	const FVector ToHit = (ImpactLowered - GetActorLocation()).GetSafeNormal();
+
+	// Forward * ToHit = cos(theta) si les deux Vector son Normal
+	const double CosTheta = FVector::DotProduct(Forward, ToHit);
+
+	// Take the inverse cosine(Acos) of cosTheta to get theta ( angle entre les deux Vector 
+	double Theta = FMath::Acos(CosTheta);
+
+	// le metre en Degrees
+	Theta = FMath::RadiansToDegrees(Theta);
+
+	// if CrossProduct points down, Theta should be negative
+	const FVector CrossProduct = FVector::CrossProduct(Forward, ToHit);
+
+	if (CrossProduct.Z < 0)
+	{
+		Theta *= -1.f;
+	}
+
+	FName Section("HitBack");
+
+	if (Theta >= -45.f && Theta < 45.f)
+	{
+		Section = FName("HitFront");
+	}
+	else if (Theta >= -135.f && Theta < -45.f)
+	{
+		Section = FName("FromLeft");
+	}
+	else if (Theta >= 45.f && Theta < 135)
+	{
+		Section = FName("HitRight");
+	}
+
+	PLayHitMontage(Section);
+	
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Green, FString::Printf(TEXT("Theta: %f"), Theta));
+	}
+	
+	DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + Forward * 60.f, 5.f, FColor::Blue, true);
+	DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + ToHit * 60.f, 5.f, FColor::Green, true);
+	DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + CrossProduct * 60.f, 5.f, FColor::Yellow, true);
 }
 
