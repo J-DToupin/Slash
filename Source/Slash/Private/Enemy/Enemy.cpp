@@ -97,7 +97,7 @@ void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
 	// DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + CrossProduct * 60.f, 5.f, FColor::Yellow, true);
 }
 
-void AEnemy::GetHit(const FVector& ImpactPoint)
+void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
 	//DRAW_SPHERE(ImpactPoint, FColor::Red)
 	

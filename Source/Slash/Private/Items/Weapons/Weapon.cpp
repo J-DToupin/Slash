@@ -6,6 +6,8 @@
 #include "Characters/SlashCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
+#include "Field/FieldSystemObjects.h"
+#include "Field/FieldSystemComponent.h"
 #include "Interfaces/HitInterface.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -26,6 +28,16 @@ AWeapon::AWeapon()
 	BoxTracesStart->SetupAttachment(RootComponent);
 	BoxTracesEnd = CreateDefaultSubobject<USceneComponent>(TEXT("Box Trace End"));
 	BoxTracesEnd->SetupAttachment(RootComponent);
+
+	RadialFalloff = CreateDefaultSubobject<URadialFalloff>(TEXT("RadialFallOff"));
+	
+	FieldSystemMetaDataFilter = CreateDefaultSubobject<UFieldSystemMetaDataFilter>(TEXT("FieldSystemMetaDataFilter"));
+	FieldSystemMetaDataFilter->ObjectType = EFieldObjectType::Field_Object_Destruction;
+	
+	RadialVector = CreateDefaultSubobject<URadialVector>(TEXT("RadialVector"));
+
+	MetaData = CreateDefaultSubobject<UFieldSystemMetaData>(TEXT("MetaData"));
+	FieldSystemComponent = CreateDefaultSubobject<UFieldSystemComponent>(TEXT("FieldSystemComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -34,6 +46,8 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 
 	WeaponBox->OnComponentBeginOverlap.AddDynamic(this,&AWeapon::OnBoxOverlap);
+
+	
 	
 }
 
@@ -67,15 +81,25 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 
 		if (BoxHit.GetActor())
 		{
-			if (IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor()))
+			if (BoxHit.GetActor()->Implements<UHitInterface>())
 			{
-				HitInterface->GetHit(BoxHit.ImpactPoint);
+				IHitInterface::Execute_GetHit(BoxHit.GetActor(),BoxHit.ImpactPoint);
 			}
 
 			IgnoreActors.AddUnique(BoxHit.GetActor());
+			CreateFields(BoxHit.ImpactPoint);
 		}
 	}
 	
+}
+
+void AWeapon::CreateFields(const FVector& FieldLocation)
+{
+	RadialFalloff->SetRadialFalloff(1000000.f, 0.8f, 1.f, 0.f,200.f, FieldLocation, EFieldFalloffType::Field_FallOff_None);
+	RadialVector->SetRadialVector(1500000.f, FieldLocation);
+	
+	FieldSystemComponent->ApplyPhysicsField(true,EFieldPhysicsType::Field_ExternalClusterStrain, MetaData,RadialFalloff);
+	FieldSystemComponent->ApplyPhysicsField(true,EFieldPhysicsType::Field_LinearForce, FieldSystemMetaDataFilter,RadialVector);
 }
 
 // Called every frame

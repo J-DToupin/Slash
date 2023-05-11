@@ -6,8 +6,13 @@
 #include "Items/Item.h"
 #include "Weapon.generated.h"
 
+class URadialVector;
+class UFieldSystemMetaDataFilter;
+class URadialFalloff;
 class UBoxComponent;
 class USoundBase;
+class UFieldSystemMetaData;
+class UFieldSystemComponent;
 UCLASS()
 class SLASH_API AWeapon : public AItem
 {
@@ -30,6 +35,19 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> BoxTracesEnd;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<URadialFalloff> RadialFalloff;
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UFieldSystemMetaDataFilter> FieldSystemMetaDataFilter;
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<URadialVector> RadialVector;
+
+	UPROPERTY()
+	TObjectPtr<UFieldSystemMetaData> MetaData;
+
+	UPROPERTY()
+	TObjectPtr<UFieldSystemComponent> FieldSystemComponent;
+
 	
 	
 protected:
@@ -39,6 +57,9 @@ protected:
 	UFUNCTION()
 	virtual void OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void CreateFields(const FVector& FieldLocation);
 
 	// virtual void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	// 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
