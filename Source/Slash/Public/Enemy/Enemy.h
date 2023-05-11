@@ -25,6 +25,13 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category=Montages)
 	TObjectPtr<UAnimMontage> HitMontage;
 
+	UPROPERTY(EditAnywhere, Category=Sounds)
+	TObjectPtr<USoundBase> HitSound;
+
+	//la version cascade old one
+	UPROPERTY(EditDefaultsOnly, Category=VisualEffects)
+	TObjectPtr<UParticleSystem> HitParticle;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -39,6 +46,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void DirectionalHitReact(const FVector& ImpactPoint);
 
 	virtual void GetHit(const FVector& ImpactPoint) override;
 };

@@ -29,6 +29,7 @@ private:
 	TObjectPtr<USceneComponent> BoxTracesStart;
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> BoxTracesEnd;
+
 	
 	
 protected:
@@ -44,6 +45,9 @@ protected:
 	
 
 public:
+
+	UPROPERTY()
+	TArray<AActor*> IgnoreActors;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void AttachMeshToSocket(USceneComponent* InParent, FName InSocketName);
