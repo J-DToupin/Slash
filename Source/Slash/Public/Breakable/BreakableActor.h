@@ -8,6 +8,8 @@
 #include "Interfaces/HitInterface.h"
 #include "BreakableActor.generated.h"
 
+class UCapsuleComponent;
+class ATresor;
 class FOnChaosBreakEvent;
 class UGeometryCollectionComponent;
 class USoundWave;
@@ -20,14 +22,23 @@ public:
 	ABreakableActor();
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UGeometryCollectionComponent> GeometryCollectionComponent;
+	
 
 	UPROPERTY(EditAnywhere, Category=Sound)
 	TObjectPtr<USoundWave> PotBreak;
+
+	//TSubclass fait un UClass qui peut etre seulement etre un ATresor
+	UPROPERTY(EditAnywhere, Category=Class)
+	TSubclassOf<ATresor> TreasureClass;
 	
 
 protected:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UGeometryCollectionComponent> GeometryCollectionComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UCapsuleComponent> Capsule;
+	
 	virtual void BeginPlay() override;
 
 public:
