@@ -9,15 +9,15 @@
 // Sets default values
 ATresor::ATresor()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	
 }
 
 // Called when the game starts or when spawned
 void ATresor::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	GetWorldTimerManager().SetTimer(TresorTimerHandle, this, &ATresor::TresorRotation, 0.01f, true);
 }
 
 void ATresor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -29,17 +29,13 @@ void ATresor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 		{
 			UGameplayStatics::PlaySoundAtLocation(this, PickUpSound, GetActorLocation());
 		}
-		
+		GetWorldTimerManager().ClearTimer(TresorTimerHandle);
 		this->Destroy();
 	}
 	
 }
 
-// Called every frame
-void ATresor::Tick(float DeltaTime)
+void ATresor::TresorRotation()
 {
-	Super::Tick(DeltaTime);
-
 	AddActorWorldRotation(FRotator(0.f,2.f,0.f));
 }
-
