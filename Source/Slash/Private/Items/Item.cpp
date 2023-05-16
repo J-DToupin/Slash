@@ -1,11 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-
+#include "Items/Item.h"
 #include "Slash/Public/Items/Item.h"
 
 #include "Characters/SlashCharacter.h"
 #include "Components/SphereComponent.h"
+#include "NiagaraComponent.h"
 
 
 
@@ -20,6 +21,9 @@ AItem::AItem() : Amplitude(0.25f), TimeConstant(5.0f)
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	SphereComponent->SetupAttachment(GetRootComponent());
+
+	NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraEmbers"));
+	NiagaraComponent->SetupAttachment(GetRootComponent());
 	
 
 }

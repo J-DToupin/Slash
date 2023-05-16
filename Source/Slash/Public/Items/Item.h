@@ -14,6 +14,7 @@ enum class EItemState : uint8
 };
 
 class USphereComponent;
+class UNiagaraComponent;
 UCLASS()
 class SLASH_API AItem : public AActor
 {
@@ -35,6 +36,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> ItemMesh;
+
+	UPROPERTY(EditAnywhere, Category=Niagara)
+	TObjectPtr<UNiagaraComponent> NiagaraComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Sine Parameters")
 	float Amplitude{};

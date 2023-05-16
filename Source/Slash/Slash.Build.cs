@@ -10,7 +10,8 @@ public class Slash : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
-			"Core", "CoreUObject", "Engine", "InputCore","EnhancedInput","HairStrandsCore","Niagara", "FieldSystemEngine", "GeometryCollectionEngine", "ChaosSolverEngine"
+			"Core", "CoreUObject", "Engine", "InputCore","EnhancedInput","HairStrandsCore","Niagara", "FieldSystemEngine", "GeometryCollectionEngine", "ChaosSolverEngine",
+			"UMG"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

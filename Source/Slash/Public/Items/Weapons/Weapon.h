@@ -24,6 +24,9 @@ public:
 	
 private:
 
+	UPROPERTY(EditAnywhere, Category=Damage)
+	float BaseDamage = 20.f;
+
 	UPROPERTY(EditAnywhere, Category= "Weapon Properties")
 	TObjectPtr<USoundBase> EquipSound;
 
@@ -73,7 +76,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void AttachMeshToSocket(USceneComponent* InParent, FName InSocketName);
 
-	void Equip(USceneComponent* InParent, FName InSocketName);
+	void Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator);
 
 	FORCEINLINE UBoxComponent* GetWeaponBox() const
 	{

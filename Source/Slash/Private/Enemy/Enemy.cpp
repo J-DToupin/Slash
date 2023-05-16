@@ -2,8 +2,11 @@
 
 
 #include "Enemy/Enemy.h"
+
+#include "Component/AttributeComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "HUD/HealthBarComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Slash/DebugMacros.h"
 
@@ -11,6 +14,11 @@
 AEnemy::AEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	Attribute = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attribute"));
+
+	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
+	HealthBarWidget->SetupAttachment(GetRootComponent());
 
 	GetMesh()->SetCollisionObjectType(ECC_WorldDynamic);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
@@ -35,6 +43,42 @@ void AEnemy::PLayHitMontage(const FName& SelectionName) const
 		AnimInstance->Montage_Play(HitMontage);
 		AnimInstance->Montage_JumpToSection(SelectionName, HitMontage);
 	}
+}
+
+void AEnemy::PLayDeathMontage(const FName& SelectionName) const
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	
+	if (AnimInstance && DeathMontage)
+	{
+		AnimInstance->Montage_Play(DeathMontage);
+		AnimInstance->Montage_JumpToSection(SelectionName, DeathMontage);
+	}
+}
+
+void AEnemy::PlayRandomDeathMontage() const
+{
+	const int32 RandomNum = FMath::RandRange(0,3);
+	FName SelectionName{"ShieldDeath"};
+	switch (RandomNum)
+	{
+	case 0:
+		SelectionName = FName("ShieldDeath");
+		break;
+	case 1:
+		SelectionName = FName("FlyDeath");
+		break;
+	case 2:
+		SelectionName = FName("ForwardDeath");
+		break;
+	case 3:
+		SelectionName = FName("BackDeath");
+		break;
+	default:
+		SelectionName = FName("ShieldDeath");
+	}
+
+	PLayDeathMontage(SelectionName);
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -100,8 +144,10 @@ void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
 	//DRAW_SPHERE(ImpactPoint, FColor::Red)
-	
-	DirectionalHitReact(ImpactPoint);
+	if (Attribute->IsAlive())
+	{
+		DirectionalHitReact(ImpactPoint);
+	}
 
 	if (HitSound)
 	{
@@ -113,5 +159,24 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 		//version cascade
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),HitParticle, ImpactPoint);
 	}
+}
+
+float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	if (Attribute && HealthBarWidget)
+	{
+		Attribute->AddHealth(-DamageAmount);
+		
+		HealthBarWidget->SetHealthPercent(Attribute->GetPercentHealth());
+
+		if (!Attribute->IsAlive())
+		{
+			PlayRandomDeathMontage();
+		}
+	}
+	
+	
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 

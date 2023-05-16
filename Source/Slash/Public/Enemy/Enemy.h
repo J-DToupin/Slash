@@ -7,6 +7,8 @@
 #include "Interfaces/HitInterface.h"
 #include "Enemy.generated.h"
 
+class UHealthBarComponent;
+class UAttributeComponent;
 class UAnimMontage;
 UCLASS()
 class SLASH_API AEnemy : public ACharacter, public IHitInterface
@@ -18,12 +20,22 @@ public:
 	AEnemy();
 
 private:
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UAttributeComponent> Attribute;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UHealthBarComponent> HealthBarWidget;
+	
 	/**
  *Animation Montage
  */
 
 	UPROPERTY(EditDefaultsOnly, Category=Montages)
 	TObjectPtr<UAnimMontage> HitMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category=Montages)
+	TObjectPtr<UAnimMontage> DeathMontage;
 
 	UPROPERTY(EditAnywhere, Category=Sounds)
 	TObjectPtr<USoundBase> HitSound;
@@ -39,6 +51,10 @@ protected:
 	 * Play montage function
 	*/
 	void PLayHitMontage(const FName& SelectionName) const;
+	
+	void PLayDeathMontage(const FName& SelectionName) const;
+
+	void PlayRandomDeathMontage() const;
 
 public:
 	// Called every frame
@@ -49,4 +65,6 @@ public:
 	void DirectionalHitReact(const FVector& ImpactPoint);
 
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
+
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 };

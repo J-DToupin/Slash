@@ -10,6 +10,7 @@
 #include "Field/FieldSystemComponent.h"
 #include "Interfaces/HitInterface.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraComponent.h"
 
 
 // Sets default values
@@ -88,6 +89,8 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 
 			IgnoreActors.AddUnique(BoxHit.GetActor());
 			CreateFields(BoxHit.ImpactPoint);
+
+			UGameplayStatics::ApplyDamage(BoxHit.GetActor(), BaseDamage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 		}
 	}
 	
@@ -114,8 +117,10 @@ void AWeapon::AttachMeshToSocket(USceneComponent* InParent, FName InSocketName)
 	ItemMesh->AttachToComponent(InParent, TransformRules, InSocketName);
 }
 
-void AWeapon::Equip(USceneComponent* InParent, FName InSocketName)
+void AWeapon::Equip(USceneComponent* InParent, FName InSocketName,AActor* NewOwner, APawn* NewInstigator)
 {
+	SetOwner(NewOwner);
+	SetInstigator(NewInstigator);
 	AttachMeshToSocket(InParent, InSocketName);
 	ItemState = EItemState::Eis_Equipped;
 	
@@ -127,6 +132,12 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocketName)
 	if (SphereComponent)
 	{
 		SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	if (NiagaraComponent)
+	{
+		NiagaraComponent->Deactivate();
+		
 	}
 }
 
