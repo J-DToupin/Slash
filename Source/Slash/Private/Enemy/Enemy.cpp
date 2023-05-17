@@ -8,7 +8,6 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Slash/DebugMacros.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -19,7 +18,8 @@ AEnemy::AEnemy()
 
 	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
 	HealthBarWidget->SetupAttachment(GetRootComponent());
-
+	HealthBarWidget->SetVisibility(false);
+	
 	GetMesh()->SetCollisionObjectType(ECC_WorldDynamic);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
@@ -34,32 +34,32 @@ void AEnemy::BeginPlay()
 	
 }
 
-void AEnemy::PLayHitMontage(const FName& SelectionName) const
+void AEnemy::PLayMontage(const FName& SelectionName, UAnimMontage* Montage)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	
-	if (AnimInstance && HitMontage)
-	{
-		AnimInstance->Montage_Play(HitMontage);
-		AnimInstance->Montage_JumpToSection(SelectionName, HitMontage);
-	}
-}
-
-void AEnemy::PLayDeathMontage(const FName& SelectionName) const
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance && !Montage) return;
 	
-	if (AnimInstance && DeathMontage)
+	AnimInstance->Montage_Play(Montage);
+	AnimInstance->Montage_JumpToSection(SelectionName, Montage);
+
+	if (Montage == DeathMontage)
 	{
-		AnimInstance->Montage_Play(DeathMontage);
-		AnimInstance->Montage_JumpToSection(SelectionName, DeathMontage);
+		DeathSectionName = SelectionName;
+		
+		if (FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveMontageInstance())
+		{
+			MontageInstance->OnMontageBlendingOutStarted.BindUObject(this, &AEnemy::OnDeathMontageBlendingOut);
+		}
+		
 	}
+	
 }
 
-void AEnemy::PlayRandomDeathMontage() const
+void AEnemy::PlayRandomDeathMontage()
 {
 	const int32 RandomNum = FMath::RandRange(0,3);
-	FName SelectionName{"ShieldDeath"};
+	FName SelectionName;
 	switch (RandomNum)
 	{
 	case 0:
@@ -78,12 +78,71 @@ void AEnemy::PlayRandomDeathMontage() const
 		SelectionName = FName("ShieldDeath");
 	}
 
-	PLayDeathMontage(SelectionName);
+	PLayMontage(SelectionName, DeathMontage);
+}
+
+void AEnemy::OnDeathMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (!bInterrupted && Montage == DeathMontage)
+
+	{
+
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+		if (AnimInstance)
+
+		{
+
+			int32 SectionIndex = DeathMontage->GetSectionIndex(DeathSectionName);
+
+			float SectionStart;
+
+			float SectionEnd;
+
+			DeathMontage->GetSectionStartAndEndTime(SectionIndex, SectionStart, SectionEnd);
+
+
+
+			AnimInstance->Montage_Play(DeathMontage);
+
+			AnimInstance->Montage_JumpToSection(DeathSectionName, DeathMontage);
+
+			AnimInstance->Montage_SetPosition(
+
+			DeathMontage,
+
+			SectionStart + DeathMontage->GetSectionLength(SectionIndex) - KINDA_SMALL_NUMBER);
+
+
+
+			AnimInstance->Montage_SetPlayRate(DeathMontage, 0.0f);
+
+		}
+
+	}
 }
 
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (CombatTarget)
+	{
+		const double DistanceToTarget = (CombatTarget->GetActorLocation() - GetActorLocation()).Size();
+
+		if (DistanceToTarget > CombatRadius)
+		{
+			CombatTarget = nullptr;
+			if (HealthBarWidget)
+			{
+				HealthBarWidget->SetVisibility(false);
+			}
+		}
+		// else
+		// {
+		// 	HealthBarWidget->SetVisibility(true);
+		// }
+	}
 }
 
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -129,7 +188,7 @@ void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
 		Section = FName("HitRight");
 	}
 
-	PLayHitMontage(Section);
+	PLayMontage(Section, HitMontage);
 	
 	if (GEngine)
 	{
@@ -143,6 +202,11 @@ void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
 
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetVisibility(true);
+	}
+
 	//DRAW_SPHERE(ImpactPoint, FColor::Red)
 	if (Attribute->IsAlive())
 	{
@@ -161,8 +225,16 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 	}
 }
 
+void AEnemy::Death()
+{
+	PlayRandomDeathMontage();
+	HealthBarWidget->DestroyComponent();
+	GetCapsuleComponent()->DestroyComponent();
+	SetLifeSpan(3.f);
+}
+
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
+                         AActor* DamageCauser)
 {
 	if (Attribute && HealthBarWidget)
 	{
@@ -172,11 +244,11 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 
 		if (!Attribute->IsAlive())
 		{
-			PlayRandomDeathMontage();
+			Death();
 		}
 	}
-	
-	
+
+	CombatTarget = EventInstigator->GetPawn();
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 

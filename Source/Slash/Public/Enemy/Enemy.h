@@ -21,15 +21,23 @@ public:
 
 private:
 
+	UPROPERTY(EditAnywhere)
+	double CombatRadius{500};
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAttributeComponent> Attribute;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UHealthBarComponent> HealthBarWidget;
+
+	UPROPERTY()
+	TObjectPtr<AActor> CombatTarget;
 	
 	/**
  *Animation Montage
  */
+
+	FName DeathSectionName{};
 
 	UPROPERTY(EditDefaultsOnly, Category=Montages)
 	TObjectPtr<UAnimMontage> HitMontage;
@@ -50,11 +58,11 @@ protected:
 	/**
 	 * Play montage function
 	*/
-	void PLayHitMontage(const FName& SelectionName) const;
+	void PLayMontage(const FName& SelectionName, UAnimMontage* Montage);
 	
-	void PLayDeathMontage(const FName& SelectionName) const;
+	void PlayRandomDeathMontage();
 
-	void PlayRandomDeathMontage() const;
+	void OnDeathMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
 
 public:
 	// Called every frame
@@ -65,6 +73,7 @@ public:
 	void DirectionalHitReact(const FVector& ImpactPoint);
 
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
+	void Death();
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 };
