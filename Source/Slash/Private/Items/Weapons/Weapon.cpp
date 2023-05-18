@@ -141,3 +141,9 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocketName,AActor* NewOwn
 	}
 }
 
+void AWeapon::UnEquip(const AWeapon* NewWeapon)
+{
+	GetWorld()->SpawnActor<AWeapon>(GetClass(), NewWeapon->GetActorLocation(),NewWeapon->GetActorRotation());
+	Destroy();
+}
+

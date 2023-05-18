@@ -3,9 +3,11 @@
 
 #include "Enemy/Enemy.h"
 
+#include "AIController.h"
 #include "Component/AttributeComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -26,12 +28,33 @@ AEnemy::AEnemy()
 	GetMesh()->SetGenerateOverlapEvents(true);
 	
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	bUseControllerRotationYaw = false;
+}
+
+void AEnemy::SetAI() const
+{
+	// Set AI Enemy
+	if (AiController && PatrolTarget)
+	{
+		FAIMoveRequest MoveRequest;
+		MoveRequest.SetGoalActor(PatrolTarget);
+		MoveRequest.SetAcceptanceRadius(15.f);
+
+		// FNavPathSharedPtr pointer qui store les data de Moveto
+		AiController->MoveTo(MoveRequest);
+	}
 }
 
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	AiController = Cast<AAIController>(GetController());
+	SetAI();
 }
 
 void AEnemy::PLayMontage(const FName& SelectionName, UAnimMontage* Montage)
@@ -50,6 +73,7 @@ void AEnemy::PLayMontage(const FName& SelectionName, UAnimMontage* Montage)
 		if (FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveMontageInstance())
 		{
 			MontageInstance->OnMontageBlendingOutStarted.BindUObject(this, &AEnemy::OnDeathMontageBlendingOut);
+			
 		}
 		
 	}
@@ -122,15 +146,21 @@ void AEnemy::OnDeathMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
 	}
 }
 
+bool AEnemy::InTargetRange(const AActor* Target, const double Radius) const
+{
+	const double DistanceToTarget = (Target->GetActorLocation() - GetActorLocation()).Size();
+
+	return DistanceToTarget <= Radius;
+}
+
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 	if (CombatTarget)
 	{
-		const double DistanceToTarget = (CombatTarget->GetActorLocation() - GetActorLocation()).Size();
-
-		if (DistanceToTarget > CombatRadius)
+		
+		if (!InTargetRange(CombatTarget, CombatRadius))
 		{
 			CombatTarget = nullptr;
 			if (HealthBarWidget)
@@ -138,10 +168,20 @@ void AEnemy::Tick(float DeltaTime)
 				HealthBarWidget->SetVisibility(false);
 			}
 		}
-		// else
-		// {
-		// 	HealthBarWidget->SetVisibility(true);
-		// }
+	}
+
+	if (PatrolTarget)
+	{
+		if (InTargetRange(PatrolTarget, PatrolRadius))
+		{
+			if (!PatrolTargets.IsEmpty())
+			{
+				const int32 TargetSelection = FMath::RandRange(0, PatrolTargets.Num() - 1);
+
+				PatrolTarget = PatrolTargets[TargetSelection];
+				SetAI();
+			}
+		}
 	}
 }
 

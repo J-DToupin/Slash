@@ -7,6 +7,7 @@
 #include "Interfaces/HitInterface.h"
 #include "Enemy.generated.h"
 
+class AAIController;
 class UHealthBarComponent;
 class UAttributeComponent;
 class UAnimMontage;
@@ -18,11 +19,12 @@ class SLASH_API AEnemy : public ACharacter, public IHitInterface
 public:
 	// Sets default values for this character's properties
 	AEnemy();
+	
 
 private:
 
 	UPROPERTY(EditAnywhere)
-	double CombatRadius{500};
+	double CombatRadius{500.f};
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAttributeComponent> Attribute;
@@ -32,6 +34,25 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<AActor> CombatTarget;
+
+	/**
+	 * Navigation
+	 */
+
+	UPROPERTY()
+	TObjectPtr<AAIController> AiController;
+
+	// Current patrol target
+	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
+	TObjectPtr<AActor> PatrolTarget;
+
+	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
+	TArray<AActor*> PatrolTargets;
+
+	UPROPERTY(EditAnywhere)
+	double PatrolRadius{200.f};
+
+	void SetAI() const;
 	
 	/**
  *Animation Montage
@@ -63,6 +84,8 @@ protected:
 	void PlayRandomDeathMontage();
 
 	void OnDeathMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
+
+	bool InTargetRange(const AActor* Target, const double Radius) const;
 
 public:
 	// Called every frame

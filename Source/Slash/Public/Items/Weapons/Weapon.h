@@ -77,6 +77,7 @@ public:
 	void AttachMeshToSocket(USceneComponent* InParent, FName InSocketName);
 
 	void Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator);
+	void UnEquip(const AWeapon* NewWeapon);
 
 	FORCEINLINE UBoxComponent* GetWeaponBox() const
 	{
