@@ -5,8 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
+#include "Characters/CharracterTypes.h"
 #include "Enemy.generated.h"
 
+
+class UPawnSensingComponent;
 class AAIController;
 class UHealthBarComponent;
 class UAttributeComponent;
@@ -22,23 +25,31 @@ public:
 	
 
 private:
-
-	UPROPERTY(EditAnywhere)
-	double CombatRadius{500.f};
-
+	/**
+	 * @brief Components
+	 */
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAttributeComponent> Attribute;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UHealthBarComponent> HealthBarWidget;
 
-	UPROPERTY()
-	TObjectPtr<AActor> CombatTarget;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPawnSensingComponent> PawnSensingComponent;
 
 	/**
 	 * Navigation
 	 */
 
+	UPROPERTY(EditAnywhere)
+	double CombatRadius{500.f};
+
+	UPROPERTY(EditAnywhere)
+	double AttackRadius{150.f};
+
+	UPROPERTY()
+	TObjectPtr<AActor> CombatTarget;
+	
 	UPROPERTY()
 	TObjectPtr<AAIController> AiController;
 
@@ -52,7 +63,15 @@ private:
 	UPROPERTY(EditAnywhere)
 	double PatrolRadius{200.f};
 
-	void SetAI() const;
+	FTimerHandle PatrolTimer;
+
+	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
+	float MinWaitPatrol = 5.f;
+	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
+	float MaxWaitPatrol = 10.f;
+
+	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
+	
 	
 	/**
  *Animation Montage
@@ -86,6 +105,21 @@ protected:
 	void OnDeathMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
 
 	bool InTargetRange(const AActor* Target, const double Radius) const;
+
+	/**
+	 * AI
+	 */
+
+	void SetAIMoveToTarget(const AActor* Target) const;
+
+	void PatrolTimerFinished();
+	
+	AActor* ChoosePatrolTarget();
+	void CheckCombatTarget();
+	void CheckPatrolTarget();
+
+	UFUNCTION()
+	void PawnSeen(APawn* Target);
 
 public:
 	// Called every frame

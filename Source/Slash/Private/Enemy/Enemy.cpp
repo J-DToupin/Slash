@@ -10,6 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Perception/PawnSensingComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -33,28 +34,26 @@ AEnemy::AEnemy()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
+
+	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
+	PawnSensingComponent->SightRadius = 4000.f;
+	PawnSensingComponent->SetPeripheralVisionAngle(45.f);
 }
 
-void AEnemy::SetAI() const
-{
-	// Set AI Enemy
-	if (AiController && PatrolTarget)
-	{
-		FAIMoveRequest MoveRequest;
-		MoveRequest.SetGoalActor(PatrolTarget);
-		MoveRequest.SetAcceptanceRadius(15.f);
-
-		// FNavPathSharedPtr pointer qui store les data de Moveto
-		AiController->MoveTo(MoveRequest);
-	}
-}
 
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
 	AiController = Cast<AAIController>(GetController());
-	SetAI();
+
+	SetAIMoveToTarget(PatrolTarget);
+
+	if (PawnSensingComponent)
+	{
+		PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::PawnSeen);
+		
+	}
 }
 
 void AEnemy::PLayMontage(const FName& SelectionName, UAnimMontage* Montage)
@@ -148,40 +147,114 @@ void AEnemy::OnDeathMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
 
 bool AEnemy::InTargetRange(const AActor* Target, const double Radius) const
 {
+	if (Target == nullptr) return false;
+	
 	const double DistanceToTarget = (Target->GetActorLocation() - GetActorLocation()).Size();
 
 	return DistanceToTarget <= Radius;
+}
+
+void AEnemy::SetAIMoveToTarget(const AActor* Target) const
+{
+	// Set AI Enemy
+	if (AiController == nullptr || Target == nullptr) return;
+	
+	FAIMoveRequest MoveRequest;
+	MoveRequest.SetGoalActor(Target);
+	MoveRequest.SetAcceptanceRadius(15.f);
+
+	// FNavPathSharedPtr pointer qui store les data de Moveto
+	AiController->MoveTo(MoveRequest);
+	
+}
+
+void AEnemy::PatrolTimerFinished()
+{
+	SetAIMoveToTarget(PatrolTarget);
+}
+
+AActor* AEnemy::ChoosePatrolTarget()
+{
+	if (PatrolTargets.IsEmpty()) return nullptr;
+
+	int32 TargetSelection;
+	
+	do
+	{
+		 TargetSelection = FMath::RandRange(0, PatrolTargets.Num() - 1);
+	}
+	while (PatrolTarget == PatrolTargets[TargetSelection]);
+	
+	return PatrolTargets[TargetSelection];
+}
+
+
+void AEnemy::CheckCombatTarget()
+{
+	if (!InTargetRange(CombatTarget, CombatRadius))
+	{
+		CombatTarget = nullptr;
+		if (HealthBarWidget)
+		{
+			HealthBarWidget->SetVisibility(false);
+		}
+
+		EnemyState = EEnemyState::EES_Patrolling;
+		GetCharacterMovement()->MaxWalkSpeed = 125.f;
+		SetAIMoveToTarget(PatrolTarget);
+	}
+	else if (!InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Chasing)
+	{
+		EnemyState = EEnemyState::EES_Chasing;
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		SetAIMoveToTarget(CombatTarget);
+	}
+	else if (InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Attacking)
+	{
+		EnemyState = EEnemyState::EES_Attacking;
+	}
+}
+
+void AEnemy::CheckPatrolTarget()
+{
+	if (InTargetRange(PatrolTarget, PatrolRadius))
+	{
+		PatrolTarget = ChoosePatrolTarget();
+		GEngine->AddOnScreenDebugMessage(3,1.f, FColor::Red, PatrolTarget->GetName());
+		GetWorldTimerManager().SetTimer(PatrolTimer, this, &AEnemy::PatrolTimerFinished,
+			FMath::RandRange(MinWaitPatrol, MaxWaitPatrol));
+	}
+}
+
+void AEnemy::PawnSeen(APawn* Target)
+{
+	if (EnemyState == EEnemyState::EES_Chasing) return;
+	
+	if (Target->ActorHasTag(FName("SlashCharacter")))
+	{
+		GetWorldTimerManager().ClearTimer(PatrolTimer);
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		CombatTarget = Target;
+
+		if (EnemyState != EEnemyState::EES_Attacking)
+		{
+			EnemyState = EEnemyState::EES_Chasing;
+			SetAIMoveToTarget(Target);
+		}
+	}
 }
 
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (CombatTarget)
+	if (EnemyState > EEnemyState::EES_Patrolling)
 	{
-		
-		if (!InTargetRange(CombatTarget, CombatRadius))
-		{
-			CombatTarget = nullptr;
-			if (HealthBarWidget)
-			{
-				HealthBarWidget->SetVisibility(false);
-			}
-		}
+		CheckCombatTarget();
 	}
-
-	if (PatrolTarget)
+	else
 	{
-		if (InTargetRange(PatrolTarget, PatrolRadius))
-		{
-			if (!PatrolTargets.IsEmpty())
-			{
-				const int32 TargetSelection = FMath::RandRange(0, PatrolTargets.Num() - 1);
-
-				PatrolTarget = PatrolTargets[TargetSelection];
-				SetAI();
-			}
-		}
+		CheckPatrolTarget();
 	}
 }
 
@@ -245,6 +318,7 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 	if (HealthBarWidget)
 	{
 		HealthBarWidget->SetVisibility(true);
+		
 	}
 
 	//DRAW_SPHERE(ImpactPoint, FColor::Red)
@@ -263,6 +337,8 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 		//version cascade
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),HitParticle, ImpactPoint);
 	}
+
+	
 }
 
 void AEnemy::Death()
@@ -289,6 +365,14 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	}
 
 	CombatTarget = EventInstigator->GetPawn();
+
+	if (EnemyState == EEnemyState::EES_Patrolling)
+	{
+		EnemyState = EEnemyState::EES_Chasing;
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		SetAIMoveToTarget(CombatTarget);
+	}
+	
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 

@@ -17,6 +17,8 @@ AItem::AItem() : Amplitude(0.25f), TimeConstant(5.0f)
 	PrimaryActorTick.bCanEverTick = true;
 
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMeshComponent"));
+	ItemMesh->SetCollisionResponseToChannels(ECR_Ignore);
+	//ItemMesh->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	RootComponent = ItemMesh;
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
