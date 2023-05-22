@@ -4,7 +4,7 @@
 #include "Items/Item.h"
 #include "Slash/Public/Items/Item.h"
 
-#include "Characters/SlashCharacter.h"
+#include "Characters/Player/SlashCharacter.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraComponent.h"
 
@@ -17,8 +17,8 @@ AItem::AItem() : Amplitude(0.25f), TimeConstant(5.0f)
 	PrimaryActorTick.bCanEverTick = true;
 
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMeshComponent"));
-	ItemMesh->SetCollisionResponseToChannels(ECR_Ignore);
-	//ItemMesh->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	ItemMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
+	ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	RootComponent = ItemMesh;
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));

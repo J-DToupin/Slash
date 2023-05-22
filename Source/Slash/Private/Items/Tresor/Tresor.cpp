@@ -2,7 +2,7 @@
 
 
 #include "Items/Tresor/Tresor.h"
-#include "Characters/SlashCharacter.h"
+#include "Characters/Player/SlashCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
 

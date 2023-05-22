@@ -3,7 +3,7 @@
 
 #include "Items/Weapons/Weapon.h"
 
-#include "Characters/SlashCharacter.h"
+
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Field/FieldSystemObjects.h"
@@ -117,14 +117,14 @@ void AWeapon::AttachMeshToSocket(USceneComponent* InParent, FName InSocketName)
 	ItemMesh->AttachToComponent(InParent, TransformRules, InSocketName);
 }
 
-void AWeapon::Equip(USceneComponent* InParent, FName InSocketName,AActor* NewOwner, APawn* NewInstigator)
+void AWeapon::Equip(USceneComponent* InParent, FName InSocketName,AActor* NewOwner, APawn* NewInstigator,const bool EnableSound)
 {
 	SetOwner(NewOwner);
 	SetInstigator(NewInstigator);
 	AttachMeshToSocket(InParent, InSocketName);
 	ItemState = EItemState::Eis_Equipped;
 	
-	if (EquipSound)
+	if (EnableSound && EquipSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, EquipSound,GetActorLocation());
 	}

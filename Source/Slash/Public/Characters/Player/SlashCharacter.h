@@ -3,11 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "Characters/CharracterTypes.h"
+#include "Characters/BaseCharacter.h"
 #include "SlashCharacter.generated.h"
 
-class AWeapon;
+
 struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
@@ -18,7 +17,7 @@ class AItem;
 
 
 UCLASS()
-class SLASH_API ASlashCharacter : public ACharacter
+class SLASH_API ASlashCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -26,11 +25,10 @@ public:
 	ASlashCharacter();
 
 private:
-
-	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
 	
-	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
-	EActionState ActionState = EActionState::EAS_Unoccupied;
+	/**
+	 * @brief Components
+	 */
 	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
@@ -46,19 +44,6 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly)
 	TObjectPtr<AItem> OverLappingItem;
-
-	/**
-	 *Animation Montage
-	 */
-
-	UPROPERTY(EditDefaultsOnly, Category=Montages)
-	TObjectPtr<UAnimMontage> AttackMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category=Montages)
-	TObjectPtr<UAnimMontage> EquipMontage;
-
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<AWeapon> EquippedWeapon;
 
 protected:
 
@@ -88,31 +73,8 @@ protected:
 	 */
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	void Attack();
 	void EKeyPressed();
 
-	/**
-	 * Play montage function
-	*/
-	void PLayAttackMontage() const;
-	void PLayEquipMontage(FName SelectionName) const;
-
-	UFUNCTION(BlueprintCallable)
-	void AttackEnd();
-
-	bool CanAttack() const;
-
-	bool CanDisarm() const;
-	bool CanArm() const;
-
-	UFUNCTION(BlueprintCallable)
-	void Disarm();
-
-	UFUNCTION(BlueprintCallable)
-	void Arm();
-
-	UFUNCTION(BlueprintCallable)
-	void FinishEquipping();
 
 public:	
 	
@@ -121,10 +83,4 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	FORCEINLINE void SetOverlappingItem(AItem* Item) {OverLappingItem = Item;}
-	FORCEINLINE ECharacterState GetCharacterState() const {return CharacterState;}
-
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable);
-	
-
 };

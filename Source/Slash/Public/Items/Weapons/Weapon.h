@@ -76,7 +76,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void AttachMeshToSocket(USceneComponent* InParent, FName InSocketName);
 
-	void Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator);
+	void Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator,const bool EnableSound = false);
 	void UnEquip(const AWeapon* NewWeapon);
 
 	FORCEINLINE UBoxComponent* GetWeaponBox() const

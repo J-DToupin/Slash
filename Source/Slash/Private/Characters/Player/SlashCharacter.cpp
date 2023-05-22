@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Characters/SlashCharacter.h"
+#include "Characters/Player/SlashCharacter.h"
 #include "InputActionValue.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -9,9 +9,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GroomComponent.h"
-#include "Animation/AnimInstance.h"
-#include "Components/BoxComponent.h"
 #include "Items/Weapons/Weapon.h"
+
+
 
 // Sets default values
 ASlashCharacter::ASlashCharacter()
@@ -19,11 +19,7 @@ ASlashCharacter::ASlashCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
-	bUseControllerRotationRoll = false;
-
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 400.f, 0.f);
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -93,16 +89,6 @@ void ASlashCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void ASlashCharacter::Attack()
-{
-	if (CanAttack())
-	{
-		PLayAttackMontage();
-		ActionState = EActionState::EAS_Attacking;
-	}
-	
-}
-
 void ASlashCharacter::EKeyPressed()
 {
 	
@@ -113,7 +99,7 @@ void ASlashCharacter::EKeyPressed()
 			EquippedWeapon->UnEquip(OverLappinWeapon);
 		}
 		
-		OverLappinWeapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
+		OverLappinWeapon->Equip(GetMesh(), FName("RightHandSocket"), this, this, true);
 		CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 		OverLappingItem = nullptr;
 		EquippedWeapon = OverLappinWeapon;
@@ -135,89 +121,6 @@ void ASlashCharacter::EKeyPressed()
 	}
 }
 
-void ASlashCharacter::PLayAttackMontage() const
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	
-	if (AnimInstance && AttackMontage)
-	{
-		AnimInstance->Montage_Play(AttackMontage);
-		const int32 Selection = FMath::RandRange(0,1);
-		FName SelectionName;
-		switch (Selection)
-		{
-		case 0:
-			SelectionName = "Attack1";
-			break;
-
-		case 1:
-			SelectionName = "Attack2";
-			break;
-
-		default:
-			SelectionName = "Attack1";
-			break;
-		}
-
-		AnimInstance->Montage_JumpToSection(SelectionName, AttackMontage);
-	}
-}
-
-void ASlashCharacter::PLayEquipMontage(FName SelectionName) const
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	
-	if (AnimInstance && EquipMontage)
-	{
-		AnimInstance->Montage_Play(EquipMontage);
-		AnimInstance->Montage_JumpToSection(SelectionName, EquipMontage);
-	}
-}
-
-void ASlashCharacter::AttackEnd()
-{
-	ActionState = EActionState::EAS_Unoccupied;
-}
-
-bool ASlashCharacter::CanAttack() const
-{
-	return ActionState == EActionState::EAS_Unoccupied &&
-		CharacterState != ECharacterState::ECS_Unequipped;
-}
-
-bool ASlashCharacter::CanDisarm() const
-{
-	return CharacterState != ECharacterState::ECS_Unequipped
-	&& ActionState == EActionState::EAS_Unoccupied;
-}
-
-bool ASlashCharacter::CanArm() const
-{
-	return CharacterState == ECharacterState::ECS_Unequipped
-	&& ActionState == EActionState::EAS_Unoccupied
-	&& EquippedWeapon;
-}
-
-void ASlashCharacter::Disarm()
-{
-	if (EquippedWeapon)
-	{
-		EquippedWeapon->AttachMeshToSocket(GetMesh(), FName("spine_Socket"));
-	}
-}
-
-void ASlashCharacter::Arm()
-{
-	if (EquippedWeapon)
-	{
-		EquippedWeapon->AttachMeshToSocket(GetMesh(), FName("RightHandSocket"));
-	}
-}
-
-void ASlashCharacter::FinishEquipping()
-{
-	ActionState = EActionState::EAS_Unoccupied;
-}
 
 // Called every frame
 void ASlashCharacter::Tick(float DeltaTime)
@@ -238,17 +141,8 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		Input->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		Input->BindAction(PicUpAction, ETriggerEvent::Started, this, &ASlashCharacter::EKeyPressed);
-		Input->BindAction(AttackAction, ETriggerEvent::Started, this, &ASlashCharacter::Attack);
+		Input->BindAction(AttackAction, ETriggerEvent::Started, this, &ABaseCharacter::Attack);
 	}
 
-}
-
-void ASlashCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable)
-{
-	if (EquippedWeapon && EquippedWeapon->GetWeaponBox())
-	{
-		EquippedWeapon->GetWeaponBox()->SetCollisionEnabled(CollisionEnable);
-		EquippedWeapon->IgnoreActors.Empty();
-	}
 }
 

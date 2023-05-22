@@ -3,52 +3,58 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "Interfaces/HitInterface.h"
+#include "Characters/BaseCharacter.h"
 #include "Characters/CharracterTypes.h"
 #include "Enemy.generated.h"
 
 
+class AWeapon;
 class UPawnSensingComponent;
 class AAIController;
 class UHealthBarComponent;
-class UAttributeComponent;
-class UAnimMontage;
 UCLASS()
-class SLASH_API AEnemy : public ACharacter, public IHitInterface
+class SLASH_API AEnemy : public ABaseCharacter
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AEnemy();
 	
 
 private:
+
+	// Stats
+
+	UPROPERTY(EditAnywhere)
+	float PatrollingSpeed = 125.f;
+	
+	UPROPERTY(EditAnywhere)
+	float ChasingSpeed = 300.f;
+	
 	/**
 	 * @brief Components
 	 */
+	
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UAttributeComponent> Attribute;
+	TObjectPtr<UPawnSensingComponent> PawnSensingComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UHealthBarComponent> HealthBarWidget;
 
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UPawnSensingComponent> PawnSensingComponent;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AWeapon> WeaponClass;
+	
 
 	/**
 	 * Navigation
 	 */
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category=Combat)
 	double CombatRadius{500.f};
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category=Combat)
 	double AttackRadius{150.f};
 
-	UPROPERTY()
-	TObjectPtr<AActor> CombatTarget;
 	
 	UPROPERTY()
 	TObjectPtr<AAIController> AiController;
@@ -71,47 +77,48 @@ private:
 	float MaxWaitPatrol = 10.f;
 
 	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
+
+	// AI behavior
+
+	void HideHealthBar() const;
+	void ShowHealthBar() const;
 	
+	void LoseInterest();
+	void StartPatrolling();
+	void StartChasing();
+	void StartAttacking();
+
+	bool IsOutsideCombatRadius() const;
+	bool IsOutsideAttackRadius() const;
+
+	bool IsDeath() const;
+	bool IsPatrolling() const;
+	bool IsChasing() const;
+	bool IsEngaged() const;
+	bool IsAttacking() const;
+
+	void ClearPatrolTimer();
+	void ClearAttackTimer();
+
+	//Combat
 	
-	/**
- *Animation Montage
- */
+	FTimerHandle AttackTimer{};
 
-	FName DeathSectionName{};
+	UPROPERTY(EditAnywhere, Category=Combat)
+	float AttackMin = 0.5f;
+	UPROPERTY(EditAnywhere, Category=Combat)
+	float AttackMax = 1.f;
 
-	UPROPERTY(EditDefaultsOnly, Category=Montages)
-	TObjectPtr<UAnimMontage> HitMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category=Montages)
-	TObjectPtr<UAnimMontage> DeathMontage;
-
-	UPROPERTY(EditAnywhere, Category=Sounds)
-	TObjectPtr<USoundBase> HitSound;
-
-	//la version cascade old one
-	UPROPERTY(EditDefaultsOnly, Category=VisualEffects)
-	TObjectPtr<UParticleSystem> HitParticle;
+	virtual void HandleDamage(const float DamageAmount) override;
 
 protected:
 	virtual void BeginPlay() override;
-
-	/**
-	 * Play montage function
-	*/
-	void PLayMontage(const FName& SelectionName, UAnimMontage* Montage);
 	
-	void PlayRandomDeathMontage();
-
-	void OnDeathMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
-
-	bool InTargetRange(const AActor* Target, const double Radius) const;
-
 	/**
 	 * AI
 	 */
 
 	void SetAIMoveToTarget(const AActor* Target) const;
-
 	void PatrolTimerFinished();
 	
 	AActor* ChoosePatrolTarget();
@@ -125,12 +132,17 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
+
+	virtual void Death() override;
+	
+	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	void DirectionalHitReact(const FVector& ImpactPoint);
 
-	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
-	void Death();
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) override;
 
-	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void Destroyed() override;
+	
 };

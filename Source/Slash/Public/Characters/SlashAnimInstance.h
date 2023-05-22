@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "CharracterTypes.h"
+#include "Characters/CharracterTypes.h"
 #include "SlashAnimInstance.generated.h"
 
-class ASlashCharacter;
+class ABaseCharacter;
 class UCharacterMovementComponent;
 /**
  * 
@@ -22,7 +22,7 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<ASlashCharacter> SlashCharacter;
+	TObjectPtr<ABaseCharacter> BaseCharacter;
 
 	UPROPERTY(BlueprintReadOnly, Category=Movement)
 	TObjectPtr<UCharacterMovementComponent> CharacterMovementComponent;

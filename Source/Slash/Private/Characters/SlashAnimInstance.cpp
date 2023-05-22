@@ -3,7 +3,7 @@
 
 #include "Characters/SlashAnimInstance.h"
 
-#include "Characters/SlashCharacter.h"
+#include "Characters/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -11,10 +11,10 @@ void USlashAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 
-	SlashCharacter = Cast<ASlashCharacter>(TryGetPawnOwner());
-	if (SlashCharacter)
+	BaseCharacter = Cast<ABaseCharacter>(TryGetPawnOwner());
+	if (BaseCharacter)
 	{
-		CharacterMovementComponent = SlashCharacter->GetCharacterMovement();
+		CharacterMovementComponent = BaseCharacter->GetCharacterMovement();
 	}
 }
 
@@ -28,6 +28,6 @@ void USlashAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 		bIsFalling = CharacterMovementComponent->IsFalling();
 
-		CharacterState = SlashCharacter->GetCharacterState();
+		CharacterState = BaseCharacter->GetCharacterState();
 	}
 }
