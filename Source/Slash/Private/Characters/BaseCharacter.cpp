@@ -82,13 +82,15 @@ void ABaseCharacter::PLayMontage(const FName& NameSelection, UAnimMontage* Monta
 	
 }
 
-void ABaseCharacter::PLayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage)
+int32 ABaseCharacter::PLayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage)
 {
-	if (ArraySelection.IsEmpty()) return;
+	if (ArraySelection.IsEmpty()) return -1;
 
-	const int32 Selection = FMath::RandRange(0,ArraySelection.Num() - 1);
+	const int32 SelectionIndex = FMath::RandRange(0,ArraySelection.Num() - 1);
 
-	PLayMontage(ArraySelection[Selection], Montage);
+	PLayMontage(ArraySelection[SelectionIndex], Montage);
+
+	return SelectionIndex;
 }
 
 void ABaseCharacter::PlayDeathMontage()

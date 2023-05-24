@@ -70,17 +70,17 @@ void AEnemy::StartAttacking()
 {
 	EnemyState = EEnemyState::EES_Attacking;
 	const float AttackTime = FMath::RandRange(AttackMin, AttackMax);
-	GetWorldTimerManager().SetTimer(AttackTimer, this, &ABaseCharacter::Attack, AttackTime);
+	GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::Attack, AttackTime);
 }
 
-bool AEnemy::IsOutsideCombatRadius() const
+bool AEnemy::IsInsideCombatRadius() const
 {
-	return !InTargetRange(CombatTarget, CombatRadius);
+	return InTargetRange(CombatTarget, CombatRadius);
 }
 
-bool AEnemy::IsOutsideAttackRadius() const
+bool AEnemy::IsInsideAttackRadius() const
 {
-	return !InTargetRange(CombatTarget, AttackRadius);
+	return InTargetRange(CombatTarget, AttackRadius);
 }
 
 bool AEnemy::IsDeath() const
@@ -189,7 +189,7 @@ AActor* AEnemy::ChoosePatrolTarget()
 
 void AEnemy::CheckCombatTarget()
 {
-	if (IsOutsideCombatRadius())
+	if (!IsInsideCombatRadius())
 	{
 		ClearAttackTimer();
 		LoseInterest();
@@ -200,7 +200,7 @@ void AEnemy::CheckCombatTarget()
 		}
 		
 	}
-	else if (IsOutsideAttackRadius() && !IsChasing())
+	else if (!IsInsideAttackRadius() && !IsChasing())
 	{
 		ClearAttackTimer();
 
@@ -210,12 +210,9 @@ void AEnemy::CheckCombatTarget()
 		}
 		
 	}
-	else if (!IsOutsideAttackRadius() && !IsAttacking())
+	else if (CanAttack())
 	{
-		if (CanAttack())
-		{
-			StartAttacking();
-		}
+		StartAttacking();
 	}
 }
 
@@ -246,6 +243,27 @@ void AEnemy::PawnSeen(APawn* Target)
 	}
 }
 
+bool AEnemy::CanAttack() const
+{
+	return IsInsideAttackRadius() &&
+		!IsAttacking() &&
+		!IsEngaged() &&
+		!IsDeath();
+}
+
+void AEnemy::Attack()
+{
+	EnemyState = EEnemyState::EES_Engaged;
+	PLayAttackMontage();
+}
+
+void AEnemy::AttackEnd()
+{
+	Super::AttackEnd();
+	EnemyState = EEnemyState::EES_None;
+	CheckCombatTarget();
+}
+
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -273,9 +291,10 @@ void AEnemy::Death()
 	Super::Death();
 	EnemyState = EEnemyState::EES_Death;
 	GetCharacterMovement()->MaxWalkSpeed = 0.f;
+	ClearAttackTimer();
 	GetWorldTimerManager().ClearTimer(PatrolTimer);
 	HealthBarWidget->DestroyComponent();
-	SetLifeSpan(3.f);
+	SetLifeSpan(LifeSpan);
 }
 
 
@@ -290,7 +309,8 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 {
 
 	HandleDamage(DamageAmount);
-		
+	CombatTarget = EventInstigator->GetPawn();
+
 	if (!IsAlive())
 	{
 		Death();
@@ -302,8 +322,6 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 		StartChasing();
 	}
 	
-	
-	CombatTarget = EventInstigator->GetPawn();
 	
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }

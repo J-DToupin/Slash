@@ -7,6 +7,7 @@
 #include "Characters/CharracterTypes.h"
 #include "SlashAnimInstance.generated.h"
 
+class AEnemy;
 class ABaseCharacter;
 class UCharacterMovementComponent;
 /**
@@ -23,6 +24,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<ABaseCharacter> BaseCharacter;
+
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<AEnemy> EnemyCharacter;
 
 	UPROPERTY(BlueprintReadOnly, Category=Movement)
 	TObjectPtr<UCharacterMovementComponent> CharacterMovementComponent;

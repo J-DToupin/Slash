@@ -91,7 +91,7 @@ protected:
 	
 	void PLayMontage(const FName& NameSelection, UAnimMontage* Montage);
 	
-	void PLayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage);
+	int32 PLayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage);
 	
 	void PlayDeathMontage();
 

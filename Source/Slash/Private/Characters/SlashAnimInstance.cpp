@@ -4,6 +4,7 @@
 #include "Characters/SlashAnimInstance.h"
 
 #include "Characters/BaseCharacter.h"
+#include "Characters/Enemy/Enemy.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -12,6 +13,7 @@ void USlashAnimInstance::NativeInitializeAnimation()
 	Super::NativeInitializeAnimation();
 
 	BaseCharacter = Cast<ABaseCharacter>(TryGetPawnOwner());
+	EnemyCharacter = Cast<AEnemy>(TryGetPawnOwner());
 	if (BaseCharacter)
 	{
 		CharacterMovementComponent = BaseCharacter->GetCharacterMovement();

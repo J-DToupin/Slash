@@ -30,6 +30,9 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	float ChasingSpeed = 300.f;
+
+	UPROPERTY(EditAnywhere)
+	float LifeSpan = 8.f;
 	
 	/**
 	 * @brief Components
@@ -50,7 +53,7 @@ private:
 	 */
 
 	UPROPERTY(EditAnywhere, Category=Combat)
-	double CombatRadius{500.f};
+	double CombatRadius{1000.f};
 
 	UPROPERTY(EditAnywhere, Category=Combat)
 	double AttackRadius{150.f};
@@ -88,8 +91,8 @@ private:
 	void StartChasing();
 	void StartAttacking();
 
-	bool IsOutsideCombatRadius() const;
-	bool IsOutsideAttackRadius() const;
+	bool IsInsideCombatRadius() const;
+	bool IsInsideAttackRadius() const;
 
 	bool IsDeath() const;
 	bool IsPatrolling() const;
@@ -127,6 +130,10 @@ protected:
 
 	UFUNCTION()
 	void PawnSeen(APawn* Target);
+
+	virtual bool CanAttack() const override;
+	virtual void Attack() override;
+	virtual void AttackEnd() override;
 
 public:
 	// Called every frame
