@@ -24,6 +24,8 @@ class SLASH_API ASlashCharacter : public ABaseCharacter
 public:
 	ASlashCharacter();
 
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 private:
 	
 	/**
@@ -73,6 +75,8 @@ protected:
 	 */
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+	void Disarm();
+	void Arm();
 	void EKeyPressed();
 
 

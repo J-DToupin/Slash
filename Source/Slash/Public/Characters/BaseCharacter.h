@@ -59,8 +59,9 @@ private:
 protected:
 
 	// Enum State
+
 	
-	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+	ECharacterEquipState CharacterEquipState = ECharacterEquipState::ECS_Unequipped;
 	
 	UPROPERTY(BlueprintReadWrite)
 	EActionState ActionState = EActionState::EAS_Unoccupied;
@@ -112,8 +113,8 @@ protected:
 	bool IsAlive() const;
 	
 	UFUNCTION(BlueprintCallable)
-	virtual void AttackEnd();
-
+	virtual void MontageEnd();
+	
 	virtual bool CanAttack() const;
 
 	bool CanDisarm() const;
@@ -127,10 +128,10 @@ protected:
 	 */
 
 	UFUNCTION(BlueprintCallable)
-	void Disarm();
+	void PutWeaponBack();
 
 	UFUNCTION(BlueprintCallable)
-	void Arm();
+	void PutWeaponRightHand();
 
 
 public:
@@ -138,6 +139,7 @@ public:
 	bool InTargetRange(const AActor* Target, const double Radius) const;
 
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
+	void Dead();
 	virtual void Death();
 	virtual void Attack();
 	
@@ -145,5 +147,5 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable);
 
-	FORCEINLINE ECharacterState GetCharacterState() const {return CharacterState;}
+	FORCEINLINE ECharacterEquipState GetCharacterEquipState() const {return CharacterEquipState;}
 };

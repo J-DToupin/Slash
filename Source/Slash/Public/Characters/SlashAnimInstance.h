@@ -38,6 +38,6 @@ public:
 	bool bIsFalling;
 
 	UPROPERTY(BlueprintReadOnly, Category="Movement | Character State")
-	ECharacterState CharacterState;
+	ECharacterEquipState CharacterEquipState;
 	
 };

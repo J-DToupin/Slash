@@ -27,13 +27,15 @@ private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	float RunningTime{};
 	
-	
-
-protected:
-
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> SphereComponent;
 
+protected:
+
+	void DisableSphereCollision() const;
+
+	void DisableNiagaraComponent() const;
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> ItemMesh;
 

@@ -30,6 +30,6 @@ void USlashAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 		bIsFalling = CharacterMovementComponent->IsFalling();
 
-		CharacterState = BaseCharacter->GetCharacterState();
+		CharacterEquipState = BaseCharacter->GetCharacterEquipState();
 	}
 }

@@ -21,6 +21,8 @@ ABaseCharacter::ABaseCharacter()
 	Attribute = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attribute"));
 	
 	GetMesh()->SetGenerateOverlapEvents(true);
+	GetMesh()->SetCollisionObjectType(ECC_WorldDynamic);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	
@@ -222,26 +224,28 @@ bool ABaseCharacter::IsAlive() const
 	 */
 
 
-void ABaseCharacter::AttackEnd()
+void ABaseCharacter::MontageEnd()
 {
 	ActionState = EActionState::EAS_Unoccupied;
 }
 
+
 bool ABaseCharacter::CanAttack() const
 {
 	return ActionState == EActionState::EAS_Unoccupied &&
-		CharacterState != ECharacterState::ECS_Unequipped;
+		CharacterEquipState != ECharacterEquipState::ECS_Unequipped;
+			
 }
 
 bool ABaseCharacter::CanDisarm() const
 {
-	return CharacterState != ECharacterState::ECS_Unequipped
+	return CharacterEquipState != ECharacterEquipState::ECS_Unequipped
 	&& ActionState == EActionState::EAS_Unoccupied;
 }
 
 bool ABaseCharacter::CanArm() const
 {
-	return CharacterState == ECharacterState::ECS_Unequipped
+	return CharacterEquipState == ECharacterEquipState::ECS_Unequipped
 	&& ActionState == EActionState::EAS_Unoccupied
 	&& EquippedWeapon;
 }
@@ -255,7 +259,7 @@ void ABaseCharacter::FinishEquipping()
 	 * Weapon Socket
 	 */
 
-void ABaseCharacter::Disarm()
+void ABaseCharacter::PutWeaponBack()
 {
 	if (EquippedWeapon)
 	{
@@ -263,7 +267,7 @@ void ABaseCharacter::Disarm()
 	}
 }
 
-void ABaseCharacter::Arm()
+void ABaseCharacter::PutWeaponRightHand()
 {
 	if (EquippedWeapon)
 	{
@@ -289,18 +293,26 @@ void ABaseCharacter::GetHit_Implementation(const FVector& ImpactPoint)
 	//DRAW_SPHERE(ImpactPoint, FColor::Red)
 	if (IsAlive())
 	{
+		ActionState = EActionState::EAS_HitReact;
 		DirectionalHitReact(ImpactPoint);
 	}
 
 	PLayHitSound(ImpactPoint);
 	SpawnHitParticles(ImpactPoint);
-	
+}
+
+void ABaseCharacter::Dead()
+{
+	ActionState = EActionState::EAS_Dead;
+	GetCharacterMovement()->Deactivate();
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABaseCharacter::Death()
 {
+	Dead();
 	PlayDeathMontage();
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 }
 
 void ABaseCharacter::Attack()

@@ -2,7 +2,7 @@
 
 // ENUM fait avec int de 8bit, UMETA montre en blueprint les noms
 UENUM(BlueprintType)
-enum class ECharacterState : uint8
+enum class ECharacterEquipState : uint8
 {
 	ECS_Unequipped UMETA(DisplayName = "Unequipped"), 
 	ECS_EquippedOneHandedWeapon UMETA(DisplayName = "Equipped One Handed Weapon"),
@@ -12,7 +12,9 @@ enum class ECharacterState : uint8
 UENUM(BlueprintType)
 enum class EActionState : uint8
 {
-	EAS_Unoccupied UMETA(DisplayName = "Unoccupied"), 
+	EAS_Dead UMETA(DisplayName = "Dead"),
+	EAS_Unoccupied UMETA(DisplayName = "Unoccupied"),
+	EAS_HitReact UMETA(DisplayName = "GetHit"),
 	EAS_Attacking UMETA(DisplayName = "Attacking"),
 	EAS_EquippingWeapon UMETA(DisplayName = "EquippingWeapon")
 };

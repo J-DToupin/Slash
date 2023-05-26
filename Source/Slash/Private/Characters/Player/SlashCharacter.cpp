@@ -42,12 +42,26 @@ ASlashCharacter::ASlashCharacter()
 
 }
 
+float ASlashCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	HandleDamage(DamageAmount);
+	CombatTarget = EventInstigator->GetPawn();
+
+	if (!IsAlive())
+	{
+		Death();
+	}
+	
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
 // Called when the game starts or when spawned
 void ASlashCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Tags.Add(FName("SlashCharacter"));
+	Tags.Add(FName("PlayerCharacter"));
 
 	if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -89,6 +103,20 @@ void ASlashCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void ASlashCharacter::Disarm()
+{
+	PLayEquipMontage(FName("UnEquip"));
+	CharacterEquipState = ECharacterEquipState::ECS_Unequipped;
+	ActionState = EActionState::EAS_EquippingWeapon;
+}
+
+void ASlashCharacter::Arm()
+{
+	PLayEquipMontage(FName("Equip"));
+	CharacterEquipState = ECharacterEquipState::ECS_EquippedOneHandedWeapon;
+	ActionState = EActionState::EAS_EquippingWeapon;
+}
+
 void ASlashCharacter::EKeyPressed()
 {
 	
@@ -100,7 +128,7 @@ void ASlashCharacter::EKeyPressed()
 		}
 		
 		OverLappinWeapon->Equip(GetMesh(), FName("RightHandSocket"), this, this, true);
-		CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+		CharacterEquipState = ECharacterEquipState::ECS_EquippedOneHandedWeapon;
 		OverLappingItem = nullptr;
 		EquippedWeapon = OverLappinWeapon;
 	}
@@ -108,15 +136,11 @@ void ASlashCharacter::EKeyPressed()
 	{
 		if (CanDisarm())
 		{
-			PLayEquipMontage(FName("UnEquip"));
-			CharacterState = ECharacterState::ECS_Unequipped;
-			ActionState = EActionState::EAS_EquippingWeapon;
+			Disarm();
 		}
 		else if (CanArm())
 		{
-			PLayEquipMontage(FName("Equip"));
-			CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
-			ActionState = EActionState::EAS_EquippingWeapon;
+			Arm();
 		}
 	}
 }

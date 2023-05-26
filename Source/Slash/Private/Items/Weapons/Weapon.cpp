@@ -5,12 +5,10 @@
 
 
 #include "Components/BoxComponent.h"
-#include "Components/SphereComponent.h"
 #include "Field/FieldSystemObjects.h"
 #include "Field/FieldSystemComponent.h"
 #include "Interfaces/HitInterface.h"
 #include "Kismet/GameplayStatics.h"
-#include "NiagaraComponent.h"
 
 
 // Sets default values
@@ -47,53 +45,65 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 
 	WeaponBox->OnComponentBeginOverlap.AddDynamic(this,&AWeapon::OnBoxOverlap);
-
-	
-	
 }
 
 
-void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AWeapon::BoxTrace(FHitResult& BoxHit)
 {
+	const FVector Start = BoxTracesStart->GetComponentLocation();
+	const FVector End = BoxTracesEnd->GetComponentLocation();
+	
+	IgnoreActors.Add(this);
+
+	UKismetSystemLibrary::BoxTraceSingle(
+		this,
+		Start,
+		End,
+		BoxTraceExtent,
+		BoxTracesStart->GetComponentRotation(),
+		TraceTypeQuery1,
+		false,
+		IgnoreActors,
+		EDrawDebugTrace::None,
+		BoxHit,
+		true
+	);
+}
+
+void AWeapon::ExecuteGetHit(FHitResult BoxHit)
+{
+	if (BoxHit.GetActor()->Implements<UHitInterface>())
+	{
+		IHitInterface::Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
+	}
+
+	IgnoreActors.AddUnique(BoxHit.GetActor());
+}
+
+bool AWeapon::ActorIsSameType(AActor* OtherActor)
+{
+	return GetOwner()->ActorHasTag(TEXT("EnemyCharacter")) && OtherActor->ActorHasTag(TEXT("EnemyCharacter"));
+}
+
+void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                           int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (ActorIsSameType(OtherActor)) return;
+	
 	if (IgnoreActors.IsEmpty())
 	{
-		const FVector Start = BoxTracesStart->GetComponentLocation();
-		const FVector End = BoxTracesEnd->GetComponentLocation();
-	
-		IgnoreActors.Add(this);
-	
-
 		FHitResult BoxHit;
+		BoxTrace(BoxHit);
 
-		UKismetSystemLibrary::BoxTraceSingle(
-			this,
-			Start,
-			End,
-			FVector(5.f,5.f,5.f),
-			BoxTracesStart->GetComponentRotation(),
-			TraceTypeQuery1,
-			false,
-			IgnoreActors,
-			EDrawDebugTrace::None,
-			BoxHit,
-			true
-			);
-
-		if (BoxHit.GetActor())
+		if (BoxHit.GetActor() && !ActorIsSameType(BoxHit.GetActor()))
 		{
-			if (BoxHit.GetActor()->Implements<UHitInterface>())
-			{
-				IHitInterface::Execute_GetHit(BoxHit.GetActor(),BoxHit.ImpactPoint);
-			}
-
-			IgnoreActors.AddUnique(BoxHit.GetActor());
+			ExecuteGetHit(BoxHit);
 			CreateFields(BoxHit.ImpactPoint);
 
-			UGameplayStatics::ApplyDamage(BoxHit.GetActor(), BaseDamage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+			UGameplayStatics::ApplyDamage(BoxHit.GetActor(), BaseDamage, GetInstigator()->GetController(), this,
+			                              UDamageType::StaticClass());
 		}
 	}
-	
 }
 
 void AWeapon::CreateFields(const FVector& FieldLocation)
@@ -117,28 +127,25 @@ void AWeapon::AttachMeshToSocket(USceneComponent* InParent, FName InSocketName)
 	ItemMesh->AttachToComponent(InParent, TransformRules, InSocketName);
 }
 
-void AWeapon::Equip(USceneComponent* InParent, FName InSocketName,AActor* NewOwner, APawn* NewInstigator,const bool EnableSound)
+void AWeapon::PlaySoundPickup(const bool EnableSound) const
 {
-	SetOwner(NewOwner);
-	SetInstigator(NewInstigator);
-	AttachMeshToSocket(InParent, InSocketName);
-	ItemState = EItemState::Eis_Equipped;
-	
 	if (EnableSound && EquipSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, EquipSound,GetActorLocation());
 	}
+}
 
-	if (SphereComponent)
-	{
-		SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
+void AWeapon::Equip(USceneComponent* InParent, FName InSocketName,AActor* NewOwner, APawn* NewInstigator,const bool EnableSound)
+{
+	ItemState = EItemState::Eis_Equipped;
+	SetOwner(NewOwner);
+	SetInstigator(NewInstigator);
+	AttachMeshToSocket(InParent, InSocketName);
 
-	if (NiagaraComponent)
-	{
-		NiagaraComponent->Deactivate();
-		
-	}
+	PlaySoundPickup(EnableSound);
+
+	DisableSphereCollision();
+	DisableNiagaraComponent();
 }
 
 void AWeapon::UnEquip(const AWeapon* NewWeapon)

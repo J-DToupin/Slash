@@ -30,6 +30,22 @@ AItem::AItem() : Amplitude(0.25f), TimeConstant(5.0f)
 
 }
 
+void AItem::DisableSphereCollision() const
+{
+	if (SphereComponent)
+	{
+		SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void AItem::DisableNiagaraComponent() const
+{
+	if (NiagaraComponent)
+	{
+		NiagaraComponent->Deactivate();
+	}
+}
+
 // Called when the game starts or when spawned
 void AItem::BeginPlay()
 {
