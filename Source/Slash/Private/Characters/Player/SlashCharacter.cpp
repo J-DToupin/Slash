@@ -105,14 +105,14 @@ void ASlashCharacter::Look(const FInputActionValue& Value)
 
 void ASlashCharacter::Disarm()
 {
-	PLayEquipMontage(FName("UnEquip"));
+	PLayUnEquipMontage();
 	CharacterEquipState = ECharacterEquipState::ECS_Unequipped;
 	ActionState = EActionState::EAS_EquippingWeapon;
 }
 
 void ASlashCharacter::Arm()
 {
-	PLayEquipMontage(FName("Equip"));
+	PLayEquipMontage();
 	CharacterEquipState = ECharacterEquipState::ECS_EquippedOneHandedWeapon;
 	ActionState = EActionState::EAS_EquippingWeapon;
 }

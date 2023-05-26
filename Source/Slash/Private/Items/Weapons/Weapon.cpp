@@ -74,7 +74,7 @@ void AWeapon::ExecuteGetHit(FHitResult BoxHit)
 {
 	if (BoxHit.GetActor()->Implements<UHitInterface>())
 	{
-		IHitInterface::Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
+		IHitInterface::Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint, GetOwner());
 	}
 
 	IgnoreActors.AddUnique(BoxHit.GetActor());

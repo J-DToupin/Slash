@@ -76,7 +76,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<AWeapon> EquippedWeapon;
 	
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category=Combat)
 	TObjectPtr<AActor> CombatTarget;
 
 	
@@ -88,15 +88,21 @@ protected:
 	
 	virtual void PLayAttackMontage();
 	
-	void PLayEquipMontage(FName SelectionName);
+	void PLayEquipMontage();
+	
+	void PLayUnEquipMontage();
 	
 	void PLayMontage(const FName& NameSelection, UAnimMontage* Montage);
+
+	void StopMontage(const UAnimMontage* Montage) const;
 	
 	int32 PLayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage);
 	
 	void PlayDeathMontage();
 
-	void OnDeathMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
+	void OnDeathMontageBlendingOut() const;
+	
+	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
 	
 	void DirectionalHitReact(const FVector& ImpactPoint);
 
@@ -119,10 +125,7 @@ protected:
 
 	bool CanDisarm() const;
 	bool CanArm() const;
-
-	UFUNCTION(BlueprintCallable)
-	void FinishEquipping();
-
+	
 	/**
 	 * Weapon Socket
 	 */
@@ -138,7 +141,7 @@ public:
 
 	bool InTargetRange(const AActor* Target, const double Radius) const;
 
-	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
+	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 	void Dead();
 	virtual void Death();
 	virtual void Attack();

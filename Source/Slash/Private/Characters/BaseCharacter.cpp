@@ -50,15 +50,14 @@ void ABaseCharacter::PLayAttackMontage()
 	PLayRandomMontage(AttackSelection, AttackMontage);
 }
 
-void ABaseCharacter::PLayEquipMontage(FName SelectionName)
+void ABaseCharacter::PLayEquipMontage()
 {
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	
-	if (AnimInstance && EquipMontage)
-	{
-		AnimInstance->Montage_Play(EquipMontage);
-		AnimInstance->Montage_JumpToSection(SelectionName, EquipMontage);
-	}
+	PLayMontage(FName("Equip"), EquipMontage);
+}
+
+void ABaseCharacter::PLayUnEquipMontage()
+{
+	PLayMontage(FName("UnEquip"), EquipMontage);
 }
 
 void ABaseCharacter::PLayMontage(const FName& NameSelection, UAnimMontage* Montage)
@@ -70,18 +69,24 @@ void ABaseCharacter::PLayMontage(const FName& NameSelection, UAnimMontage* Monta
 	AnimInstance->Montage_Play(Montage);
 	AnimInstance->Montage_JumpToSection(NameSelection, Montage);
 
-	if (Montage == DeathMontage)
+	DeathSectionName = NameSelection;
+	
+	
+	if (FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveMontageInstance())
 	{
-		DeathSectionName = NameSelection;
-		
-		if (FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveMontageInstance())
-		{
-			MontageInstance->OnMontageBlendingOutStarted.BindUObject(this, &ABaseCharacter::OnDeathMontageBlendingOut);
-			
-		}
+		MontageInstance->OnMontageBlendingOutStarted.BindUObject(this, &ABaseCharacter::OnMontageBlendingOut);
 		
 	}
 	
+}
+
+void ABaseCharacter::StopMontage(const UAnimMontage* Montage) const
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (Montage && AnimInstance)
+	{
+		AnimInstance->Montage_Stop(0.25f, Montage);
+	}
 }
 
 int32 ABaseCharacter::PLayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage)
@@ -100,44 +105,50 @@ void ABaseCharacter::PlayDeathMontage()
 	PLayRandomMontage(DeathSelection, DeathMontage);
 }
 
-void ABaseCharacter::OnDeathMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
+void ABaseCharacter::OnDeathMontageBlendingOut() const
 {
-	if (!bInterrupted && Montage == DeathMontage)
+	
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance)
 
 	{
 
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		int32 SectionIndex = DeathMontage->GetSectionIndex(DeathSectionName);
 
-		if (AnimInstance)
+		float SectionStart;
 
-		{
+		float SectionEnd;
 
-			int32 SectionIndex = DeathMontage->GetSectionIndex(DeathSectionName);
+		DeathMontage->GetSectionStartAndEndTime(SectionIndex, SectionStart, SectionEnd);
+		
+		AnimInstance->Montage_Play(DeathMontage);
+		
+		AnimInstance->Montage_JumpToSection(DeathSectionName, DeathMontage);
 
-			float SectionStart;
+		AnimInstance->Montage_SetPosition(
 
-			float SectionEnd;
+		DeathMontage,
 
-			DeathMontage->GetSectionStartAndEndTime(SectionIndex, SectionStart, SectionEnd);
-
-
-
-			AnimInstance->Montage_Play(DeathMontage);
-
-			AnimInstance->Montage_JumpToSection(DeathSectionName, DeathMontage);
-
-			AnimInstance->Montage_SetPosition(
-
-			DeathMontage,
-
-			SectionStart + DeathMontage->GetSectionLength(SectionIndex) - KINDA_SMALL_NUMBER);
-
-
-
-			AnimInstance->Montage_SetPlayRate(DeathMontage, 0.0f);
+		SectionStart + DeathMontage->GetSectionLength(SectionIndex) - KINDA_SMALL_NUMBER);
+		
+		AnimInstance->Montage_SetPlayRate(DeathMontage, 0.0f);
 
 		}
+	
+}
 
+void ABaseCharacter::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (bInterrupted) return;
+
+	if (Montage == DeathMontage)
+	{
+		OnDeathMontageBlendingOut();
+	}
+	else
+	{
+		MontageEnd();
 	}
 }
 
@@ -250,11 +261,6 @@ bool ABaseCharacter::CanArm() const
 	&& EquippedWeapon;
 }
 
-void ABaseCharacter::FinishEquipping()
-{
-	ActionState = EActionState::EAS_Unoccupied;
-}
-
 	/**
 	 * Weapon Socket
 	 */
@@ -287,16 +293,18 @@ bool ABaseCharacter::InTargetRange(const AActor* Target, const double Radius) co
 	return DistanceToTarget <= Radius;
 }
 
-void ABaseCharacter::GetHit_Implementation(const FVector& ImpactPoint)
+void ABaseCharacter::GetHit_Implementation(const FVector& ImpactPoint,  AActor* Hitter)
 {
 	
 	//DRAW_SPHERE(ImpactPoint, FColor::Red)
-	if (IsAlive())
+	StopMontage(AttackMontage);
+	if (IsAlive() && Hitter)
 	{
 		ActionState = EActionState::EAS_HitReact;
-		DirectionalHitReact(ImpactPoint);
+		DirectionalHitReact(Hitter->GetActorLocation());
 	}
 
+	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
 	PLayHitSound(ImpactPoint);
 	SpawnHitParticles(ImpactPoint);
 }
