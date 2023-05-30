@@ -9,8 +9,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GroomComponent.h"
+#include "Components/BoxComponent.h"
 #include "Items/Weapons/Weapon.h"
-
+#include "Kismet/KismetSystemLibrary.h"
 
 
 // Sets default values
@@ -40,13 +41,21 @@ ASlashCharacter::ASlashCharacter()
 	
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
+	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Vision Target"));
+	BoxComponent->SetupAttachment(GetRootComponent());
+	BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	BoxComponent->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
+
 }
 
 float ASlashCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
-	CombatTarget = EventInstigator->GetPawn();
+	if (CombatTarget == nullptr)
+	{
+		CombatTarget = EventInstigator->GetPawn();
+	}
 
 	if (!IsAlive())
 	{
@@ -54,6 +63,27 @@ float ASlashCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 	}
 	
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void ASlashCharacter::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this)
+	{
+		TargetPossible.AddUnique(OtherActor);
+		GEngine->AddOnScreenDebugMessage(6, 0.01f, FColor::Green, TEXT("InBox"));
+	}
+}
+
+void ASlashCharacter::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor && OtherActor != this)
+	{
+		TargetPossible.Remove(OtherActor);
+		GEngine->AddOnScreenDebugMessage(6, 0.01f, FColor::Red, TEXT("OutBox"));
+
+	}
 }
 
 // Called when the game starts or when spawned
@@ -70,7 +100,9 @@ void ASlashCharacter::BeginPlay()
 			Subsystem->AddMappingContext(InputMappingContext,0);
 		}
 	}
-	
+
+	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ASlashCharacter::OnBoxOverlap);
+	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ASlashCharacter::OnBoxEndOverlap);
 }
 
 void ASlashCharacter::Move(const FInputActionValue& Value)
@@ -145,11 +177,47 @@ void ASlashCharacter::EKeyPressed()
 	}
 }
 
+void ASlashCharacter::SelectTarget()
+{
+	if (TargetPossible.IsEmpty()) return;
+
+	if (TargetPossible.Num() == 1)
+	{
+		CombatTarget = TargetPossible[0];
+		return;
+	}
+
+	int32 MinDistance{999999};
+
+	for (AActor* Actor : TargetPossible)
+	{
+		const int32 Distance = FVector::Distance(Actor->GetActorLocation(), GetActorLocation());
+		
+		if (MinDistance > Distance)
+		{
+			MinDistance = Distance;
+			CombatTarget = Actor;
+		}
+		
+	}
+	
+	//UKismetSystemLibrary::LineTraceSingle()
+}
+
 
 // Called every frame
 void ASlashCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (CombatTarget)
+	{
+		GEngine->AddOnScreenDebugMessage(5, 0.01f, FColor::Blue, CombatTarget->GetName());
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(5, 0.01f, FColor::Blue, TEXT("PtrNull"));
+	}
 
 }
 
@@ -166,6 +234,8 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 		Input->BindAction(PicUpAction, ETriggerEvent::Started, this, &ASlashCharacter::EKeyPressed);
 		Input->BindAction(AttackAction, ETriggerEvent::Started, this, &ABaseCharacter::Attack);
+		
+		Input->BindAction(TargetAction, ETriggerEvent::Started, this, &ASlashCharacter::SelectTarget);
 	}
 
 }

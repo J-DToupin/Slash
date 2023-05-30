@@ -12,6 +12,8 @@ class AWeapon;
 class UPawnSensingComponent;
 class AAIController;
 class UHealthBarComponent;
+
+
 UCLASS()
 class SLASH_API AEnemy : public ABaseCharacter
 {
@@ -108,10 +110,10 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UHealthBarComponent> HealthBarWidget;
-
+	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AWeapon> WeaponClass;
-
+	
 	/**
  * Navigation
  */

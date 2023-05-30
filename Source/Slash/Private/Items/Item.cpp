@@ -2,7 +2,6 @@
 
 
 #include "Items/Item.h"
-#include "Slash/Public/Items/Item.h"
 
 #include "Characters/Player/SlashCharacter.h"
 #include "Components/SphereComponent.h"

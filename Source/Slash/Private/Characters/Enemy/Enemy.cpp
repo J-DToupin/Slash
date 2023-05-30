@@ -23,7 +23,7 @@ AEnemy::AEnemy()
 	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
 	HealthBarWidget->SetupAttachment(GetRootComponent());
 	HideHealthBar();
-
+	
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 }
 
@@ -41,6 +41,7 @@ void AEnemy::Tick(float DeltaTime)
 	{
 		CheckPatrolTarget();
 	}
+	
 }
 
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint,  AActor* Hitter)

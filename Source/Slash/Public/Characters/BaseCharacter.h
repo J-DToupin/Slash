@@ -12,6 +12,7 @@
 class UAttributeComponent;
 class AWeapon;
 class UAnimMontage;
+class UMotionWarpingComponent;
 
 UCLASS(Abstract)
 class SLASH_API ABaseCharacter : public ACharacter, public IHitInterface
@@ -48,12 +49,19 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category=Montages)
 	TObjectPtr<UAnimMontage> DeathMontage;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess), Category=Montages)
+	TObjectPtr<UMotionWarpingComponent> WarpingComponent;
+
 	UPROPERTY(EditAnywhere, Category=Sounds)
 	TObjectPtr<USoundBase> HitSound;
 
 	//la version cascade old one
 	UPROPERTY(EditDefaultsOnly, Category=VisualEffects)
 	TObjectPtr<UParticleSystem> HitParticle;
+
+	
+
+	
 	
 
 protected:
@@ -79,6 +87,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category=Combat)
 	TObjectPtr<AActor> CombatTarget;
 
+	UPROPERTY(EditAnywhere, Category=Combat)
+	double WarpTargetDistance{75.f};
+
 	
 	virtual void BeginPlay() override;
 
@@ -94,15 +105,20 @@ protected:
 	
 	void PLayMontage(const FName& NameSelection, UAnimMontage* Montage);
 
-	void StopMontage(const UAnimMontage* Montage) const;
+	void StopMontage(UAnimMontage* Montage);
 	
 	int32 PLayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage);
 	
 	void PlayDeathMontage();
 
-	void OnDeathMontageBlendingOut() const;
-	
+	void OnDeathMontageBlendingOut();
+
+	UFUNCTION()
 	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
+
+	// UFUNCTION()
+	// void OnMontageAnimNotify(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload);
+	
 	
 	void DirectionalHitReact(const FVector& ImpactPoint);
 
@@ -111,6 +127,12 @@ protected:
 	void SpawnHitParticles(const FVector& ImpactPoint) const;
 
 	virtual void HandleDamage(const float DamageAmount);
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetTranslationWarpTarget() const;
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetRotationWarpTarget() const;
 
 	/**
 	 * State update
@@ -138,6 +160,8 @@ protected:
 
 
 public:
+
+	virtual void Tick(float DeltaTime) override;
 
 	bool InTargetRange(const AActor* Target, const double Radius) const;
 
