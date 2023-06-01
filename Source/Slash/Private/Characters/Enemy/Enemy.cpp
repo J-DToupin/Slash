@@ -110,7 +110,8 @@ void AEnemy::PawnSeen(APawn* Target)
 		EnemyState != EEnemyState::EES_Death &&
 		EnemyState != EEnemyState::EES_Chasing &&
 		EnemyState < EEnemyState::EES_Attacking &&
-			Target->ActorHasTag(FName("PlayerCharacter"));
+			Target->ActorHasTag(FName("PlayerCharacter")) &&
+				!Target->ActorHasTag(FName("Dead"));
 
 	if (bShouldChaseTarget)
 	{
@@ -135,7 +136,7 @@ AActor* AEnemy::ChoosePatrolTarget()
 	return PatrolTargets[TargetSelection];
 }
 
-bool AEnemy::CanAttack() const
+bool AEnemy::CanBeginAttack() const
 {
 	return IsInsideAttackRadius() &&
 		!IsAttacking() &&
@@ -145,8 +146,9 @@ bool AEnemy::CanAttack() const
 
 void AEnemy::Attack()
 {
-	EnemyState = EEnemyState::EES_Engaged;
-	PLayAttackMontage();
+	Super::Attack();
+	
+	EnemyState = EEnemyState::EES_Engaged;	
 }
 
 void AEnemy::MontageEnd()
@@ -186,6 +188,7 @@ void AEnemy::InitializeEnemy()
 	AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
 	DefaultWeapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
 	CharacterEquipState = ECharacterEquipState::ECS_EquippedOneHandedWeapon;
+	ActionState = EActionState::EAS_Unoccupied;
 	EquippedWeapon = DefaultWeapon;
 }
 
@@ -212,11 +215,12 @@ void AEnemy::CheckCombatTarget()
 		}
 		
 	}
-	else if (CanAttack())
+	else if (CanBeginAttack())
 	{
 		StartAttacking();
 	}
 }
+
 
 void AEnemy::CheckPatrolTarget()
 {

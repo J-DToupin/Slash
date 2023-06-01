@@ -14,4 +14,5 @@ class SLASH_API ASlashGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+	
 };

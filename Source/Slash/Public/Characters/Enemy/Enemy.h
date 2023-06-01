@@ -38,7 +38,7 @@ protected:
 
 	AActor* ChoosePatrolTarget();
 	
-	virtual bool CanAttack() const override;
+	bool CanBeginAttack() const ;
 	virtual void Attack() override;
 	virtual void MontageEnd() override;
 	

@@ -12,8 +12,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/BoxComponent.h"
 
-#include "Slash/DebugMacros.h"
-
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -68,22 +66,21 @@ void ABaseCharacter::PLayMontage(const FName& NameSelection, UAnimMontage* Monta
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	
 	if (!AnimInstance && !Montage) return;
+
 	
-	bool bPlayedSuccessfully = PlayAnimMontage(Montage, 1.0f, NameSelection) > 0.0f;
+	PlayAnimMontage(Montage, 1.0f, NameSelection);
+	
+	
+	DeathSectionName = NameSelection;
 
-	if (bPlayedSuccessfully)
+	// if (Montage == AttackMontage)
+	// {
+	// 	GetMesh()->GetAnimInstance()->OnPlayMontageNotifyBegin.AddUniqueDynamic(this, &ABaseCharacter::OnMontageAnimNotify);
+	// }
+	
+	if (FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveMontageInstance())
 	{
-		DeathSectionName = NameSelection;
-
-		// if (Montage == AttackMontage)
-		// {
-		// 	GetMesh()->GetAnimInstance()->OnPlayMontageNotifyBegin.AddUniqueDynamic(this, &ABaseCharacter::OnMontageAnimNotify);
-		// }
-		
-		if (FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveMontageInstance())
-		{
-			MontageInstance->OnMontageBlendingOutStarted.BindUObject(this, &ABaseCharacter::OnMontageBlendingOut);
-		}
+		MontageInstance->OnMontageBlendingOutStarted.BindUObject(this, &ABaseCharacter::OnMontageBlendingOut);
 	}
 	
 }
@@ -92,12 +89,7 @@ void ABaseCharacter::StopMontage(UAnimMontage* Montage)
 {
 
 	StopAnimMontage(Montage);
-	// UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	// if (Montage && AnimInstance)
-	// {
-	// 	AnimInstance->Montage_Stop(0.25f, Montage);
-	// 	
-	// }
+	
 }
 
 int32 ABaseCharacter::PLayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage)
@@ -149,6 +141,7 @@ void ABaseCharacter::OnDeathMontageBlendingOut()
 void ABaseCharacter::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (bInterrupted) return;
+	//if (!CombatTarget) return;
 
 	if (Montage == DeathMontage)
 	{
@@ -257,9 +250,7 @@ FVector ABaseCharacter::GetTranslationWarpTarget() const
 
 	FVector TargetToThis = (Location - CombatTargetLocation).GetSafeNormal();
 	TargetToThis *= WarpTargetDistance;
-
-	DRAW_SPHERE(CombatTargetLocation + TargetToThis, FColor::Purple)
-
+	
 	return  CombatTargetLocation + TargetToThis;
 }
 
@@ -331,7 +322,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	if (WarpingComponent)
+	if (WarpingComponent && CombatTarget)
 	{
 		WarpingComponent->AddOrUpdateWarpTargetFromLocation(FName("TranslationTarget"),GetTranslationWarpTarget());
 		WarpingComponent->AddOrUpdateWarpTargetFromLocation(FName("RotationTarget"),GetRotationWarpTarget());
@@ -369,8 +360,8 @@ void ABaseCharacter::GetHit_Implementation(const FVector& ImpactPoint,  AActor* 
 
 void ABaseCharacter::Dead()
 {
+	Tags.Add(FName("Dead"));
 	ActionState = EActionState::EAS_Dead;
-	GetCharacterMovement()->Deactivate();
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
 }
@@ -383,11 +374,18 @@ void ABaseCharacter::Death()
 
 void ABaseCharacter::Attack()
 {
+	
+	if (CombatTarget && CombatTarget->ActorHasTag(FName("Dead")))
+	{
+		CombatTarget = nullptr;
+	}
+	
 	if (CanAttack())
 	{
 		PLayAttackMontage();
 		ActionState = EActionState::EAS_Attacking;
 	}
+	
 }
 
 void ABaseCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable)

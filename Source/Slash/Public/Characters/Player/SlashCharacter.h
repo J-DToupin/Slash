@@ -8,9 +8,6 @@
 
 
 class UBoxComponent;
-struct FInputActionValue;
-class UInputAction;
-class UInputMappingContext;
 class UCameraComponent;
 class USpringArmComponent;
 class UGroomComponent;
@@ -55,28 +52,7 @@ private:
 	TArray<AActor*> TargetPossible;
 
 protected:
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	TObjectPtr<UInputMappingContext> InputMappingContext;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	TObjectPtr<UInputAction> MoveAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	TObjectPtr<UInputAction> LookAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	TObjectPtr<UInputAction> JumpAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	TObjectPtr<UInputAction> PicUpAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	TObjectPtr<UInputAction> AttackAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
-	TObjectPtr<UInputAction> TargetAction;
-
+	
 
 	UFUNCTION()
 	virtual void OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -89,22 +65,23 @@ protected:
 	
 	virtual void BeginPlay() override;
 
-	/**
-	 * Input function
-	 */
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
 	void Disarm();
 	void Arm();
-	void EKeyPressed();
-	void SelectTarget();
-
-
+	
 public:	
 	
 	virtual void Tick(float DeltaTime) override;
-	
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	FORCEINLINE void SetOverlappingItem(AItem* Item) {OverLappingItem = Item;}
+
+	bool IsOccupied() const;
+
+	bool PickUpWeapon();
+
+
+	virtual void Jump() override;
+	
+	void SwitchWeapon();
+
+	void SelectTargetPossible();
 };

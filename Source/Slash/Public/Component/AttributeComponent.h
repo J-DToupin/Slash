@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "AttributeComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, instigatorActor, UAttributeComponent*, OwnimComp, float, Heath, float, Delta);
+
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class SLASH_API UAttributeComponent : public UActorComponent
@@ -14,6 +16,9 @@ class SLASH_API UAttributeComponent : public UActorComponent
 
 public:
 	UAttributeComponent();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnHealthChanged OnHealthChanged;
 
 private:
 
@@ -25,8 +30,9 @@ private:
 	float MaxHealth{100};
 
 public:
-	void AddHealth(const float Damage);
+	void AddHealth(const float Delta);
 
+	UFUNCTION(BlueprintCallable)
 	float GetPercentHealth() const;
 
 	bool IsAlive() const;
