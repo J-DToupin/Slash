@@ -35,6 +35,15 @@ private:
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, float Heath, float Delta);
+
+	UFUNCTION()
+	void OnStaminaChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, float Stamina, float Delta);
+
+	UFUNCTION()
+	void OnSoulChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, int32 Soul, int32 Delta);
+
+	UFUNCTION()
+	void OnGoldChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, int32 Gold, int32 Delta);
 	
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UProgressBar> HeathProgressBar;

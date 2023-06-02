@@ -23,6 +23,32 @@ float UAttributeComponent::GetPercentHealth() const
 	return Health / MaxHealth;
 }
 
+void UAttributeComponent::AddStamina(const float Delta)
+{
+	Stamina = FMath::Clamp(Stamina + Delta, 0, MaxStamina);
+
+	OnStaminaChanged.Broadcast(nullptr, this, Stamina, Delta);
+}
+
+float UAttributeComponent::GetPercentStamina() const
+{
+	return Stamina / MaxStamina;
+}
+
+void UAttributeComponent::AddSoul(const int32 Delta)
+{
+	Soul += Delta;
+
+	OnSoulChanged.Broadcast(nullptr, this, Soul, Delta);
+}
+
+void UAttributeComponent::AddGold(const int32 Delta)
+{
+	Gold += Delta;
+
+	OnGoldChanged.Broadcast(nullptr, this, Gold, Delta);
+}
+
 bool UAttributeComponent::IsAlive() const
 {
 	return  Health > 0;

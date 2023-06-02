@@ -35,5 +35,8 @@ protected:
 
 	void TresorRotation();
 
+public:
+	int32 GetGold() const;
+
 
 };

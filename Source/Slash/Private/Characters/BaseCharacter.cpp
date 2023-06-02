@@ -375,15 +375,15 @@ void ABaseCharacter::Death()
 void ABaseCharacter::Attack()
 {
 	
-	if (CombatTarget && CombatTarget->ActorHasTag(FName("Dead")))
-	{
-		CombatTarget = nullptr;
-	}
-	
 	if (CanAttack())
 	{
 		PLayAttackMontage();
 		ActionState = EActionState::EAS_Attacking;
+	}
+
+	if (CombatTarget && CombatTarget->ActorHasTag(FName("Dead")))
+	{
+		CombatTarget = nullptr;
 	}
 	
 }

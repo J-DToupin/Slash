@@ -6,7 +6,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GroomComponent.h"
+#include "Component/AttributeComponent.h"
 #include "Components/BoxComponent.h"
+#include "Items/Tresor/Tresor.h"
 #include "Items/Weapons/Weapon.h"
 
 
@@ -122,6 +124,34 @@ void ASlashCharacter::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(5, 0.01f, FColor::Blue, TEXT("PtrNull"));
 	}
 
+}
+
+void ASlashCharacter::SetOverlappingItem(AItem* Item)
+{
+	IPickUpInterface::SetOverlappingItem(Item);
+
+	OverLappingItem = Item;
+}
+
+void ASlashCharacter::AddSouls(ASoul* Soul)
+{
+	IPickUpInterface::AddSouls(Soul);
+
+	if (Attribute)
+	{
+		Attribute->AddSoul(1);
+	}
+	
+}
+
+void ASlashCharacter::AddGold(ATresor* Tresor)
+{
+	IPickUpInterface::AddGold(Tresor);
+
+	if (Attribute)
+	{
+		Attribute->AddGold(Tresor->GetGold());
+	}
 }
 
 bool ASlashCharacter::IsOccupied() const

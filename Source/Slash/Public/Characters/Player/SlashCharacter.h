@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Characters/BaseCharacter.h"
+#include "Interfaces/PickUpInterface.h"
 #include "SlashCharacter.generated.h"
 
 
@@ -15,7 +16,7 @@ class AItem;
 
 
 UCLASS()
-class SLASH_API ASlashCharacter : public ABaseCharacter
+class SLASH_API ASlashCharacter : public ABaseCharacter, public IPickUpInterface
 {
 	GENERATED_BODY()
 
@@ -72,7 +73,11 @@ public:
 	
 	virtual void Tick(float DeltaTime) override;
 
-	FORCEINLINE void SetOverlappingItem(AItem* Item) {OverLappingItem = Item;}
+	virtual void SetOverlappingItem(AItem* Item) override;
+	
+	virtual void AddSouls(ASoul* Soul) override;
+
+	virtual void AddGold(ATresor* Tresor) override;
 
 	bool IsOccupied() const;
 

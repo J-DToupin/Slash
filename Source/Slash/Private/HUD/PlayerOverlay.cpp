@@ -48,10 +48,29 @@ void UPlayerOverlay::NativeConstruct()
 	if (AttributeComponent)
 	{
 		AttributeComponent->OnHealthChanged.AddDynamic(this, &UPlayerOverlay::OnHealthChanged);
+		AttributeComponent->OnStaminaChanged.AddDynamic(this, &UPlayerOverlay::OnStaminaChanged);
+		AttributeComponent->OnSoulChanged.AddDynamic(this, &UPlayerOverlay::OnSoulChanged);
+		AttributeComponent->OnGoldChanged.AddDynamic(this, &UPlayerOverlay::OnGoldChanged);
 	}
 }
 
 void UPlayerOverlay::OnHealthChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, float Heath, float Delta)
 {
 	SetHealthBarPercent(OwnimComp->GetPercentHealth());
+}
+
+void UPlayerOverlay::OnStaminaChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, float Stamina,
+	float Delta)
+{
+	SetStaminaBarPercent(OwnimComp->GetPercentStamina());
+}
+
+void UPlayerOverlay::OnSoulChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, int32 Soul, int32 Delta)
+{
+	SetSoulText(Soul);
+}
+
+void UPlayerOverlay::OnGoldChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, int32 Gold, int32 Delta)
+{
+	SetGoldText(Gold);
 }

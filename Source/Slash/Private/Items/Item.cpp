@@ -3,10 +3,9 @@
 
 #include "Items/Item.h"
 
-#include "Characters/Player/SlashCharacter.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraComponent.h"
-
+#include "Interfaces/PickUpInterface.h"
 
 
 // Sets default values
@@ -68,9 +67,9 @@ float AItem::TransformedCos()
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (ASlashCharacter* SlashCharacter = Cast<ASlashCharacter>(OtherActor))
+	if (IPickUpInterface* PickUpInterface = Cast<IPickUpInterface>(OtherActor))
 	{
-		SlashCharacter->SetOverlappingItem(this);
+		PickUpInterface->SetOverlappingItem(this);
 	}
 
 	GEngine->AddOnScreenDebugMessage(1,30.f, FColor::Red, TEXT("In"));
@@ -79,9 +78,9 @@ void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (ASlashCharacter* SlashCharacter = Cast<ASlashCharacter>(OtherActor))
+	if (IPickUpInterface* PickUpInterface = Cast<IPickUpInterface>(OtherActor))
 	{
-		SlashCharacter->SetOverlappingItem(nullptr);
+		PickUpInterface->SetOverlappingItem(nullptr);
 	}
 
 	GEngine->AddOnScreenDebugMessage(1,30.f, FColor::Red, TEXT("Out"));

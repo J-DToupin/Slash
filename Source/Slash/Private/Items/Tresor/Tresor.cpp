@@ -23,8 +23,9 @@ void ATresor::BeginPlay()
 void ATresor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (ASlashCharacter* SlashCharacter = Cast<ASlashCharacter>(OtherActor))
+	if (IPickUpInterface* PickUpInterface = Cast<IPickUpInterface>(OtherActor))
 	{
+		PickUpInterface->AddGold(this);
 		if (PickUpSound)
 		{
 			UGameplayStatics::PlaySoundAtLocation(this, PickUpSound, GetActorLocation());
@@ -38,4 +39,9 @@ void ATresor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 void ATresor::TresorRotation()
 {
 	AddActorWorldRotation(FRotator(0.f,2.f,0.f));
+}
+
+int32 ATresor::GetGold() const
+{
+	return Gold;
 }
