@@ -3,6 +3,7 @@
 
 #include "Items/Soul.h"
 
+
 #include "Interfaces/PickUpInterface.h"
 
 
@@ -27,13 +28,10 @@ void ASoul::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 	if (PickUpInterface)
 	{
 		PickUpInterface->AddSouls(this);
+		
+		SpawnPickupSystem();
+		PlaySoundPickup();
 		Destroy();
 	}
+	
 }
-
-
-void ASoul::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-

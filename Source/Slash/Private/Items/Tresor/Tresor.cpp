@@ -2,8 +2,7 @@
 
 
 #include "Items/Tresor/Tresor.h"
-#include "Characters/Player/SlashCharacter.h"
-#include "Kismet/GameplayStatics.h"
+#include "Interfaces/PickUpInterface.h"
 
 
 // Sets default values
@@ -26,10 +25,7 @@ void ATresor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 	if (IPickUpInterface* PickUpInterface = Cast<IPickUpInterface>(OtherActor))
 	{
 		PickUpInterface->AddGold(this);
-		if (PickUpSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, PickUpSound, GetActorLocation());
-		}
+		PlaySoundPickup();
 		GetWorldTimerManager().ClearTimer(TresorTimerHandle);
 		this->Destroy();
 	}

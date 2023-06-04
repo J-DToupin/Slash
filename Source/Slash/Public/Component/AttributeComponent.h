@@ -46,6 +46,8 @@ private:
 	UPROPERTY(EditAnywhere, Category="Actor Attributes")
 	int32 Soul{0};
 
+
+private:
 	UPROPERTY(EditAnywhere, Category="Actor Attributes")
 	int32 Gold{0};
 
@@ -72,6 +74,11 @@ public:
 	void SetMaxHealth(float NewMaxHealth)
 	{
 		this->MaxHealth = NewMaxHealth;
+	}
+
+	int32 GetSoul() const
+	{
+		return Soul;
 	}
 
 protected:

@@ -318,17 +318,36 @@ void ABaseCharacter::PutWeaponRightHand()
 	}
 }
 
+bool ABaseCharacter::IsInsideCombatRadius() const
+{
+	return InTargetRange(CombatTarget, CombatRadius);
+}
+
+bool ABaseCharacter::IsInsideAttackRadius() const
+{
+	return InTargetRange(CombatTarget, AttackRadius);
+}
+
 void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	if (WarpingComponent && CombatTarget)
+
+	if (WarpingComponent)
 	{
-		WarpingComponent->AddOrUpdateWarpTargetFromLocation(FName("TranslationTarget"),GetTranslationWarpTarget());
-		WarpingComponent->AddOrUpdateWarpTargetFromLocation(FName("RotationTarget"),GetRotationWarpTarget());
+		if (CombatTarget && IsInsideAttackRadius())
+		{
+			WarpingComponent->AddOrUpdateWarpTargetFromLocation(FName("TranslationTarget"),GetTranslationWarpTarget());
+			WarpingComponent->AddOrUpdateWarpTargetFromLocation(FName("RotationTarget"),GetRotationWarpTarget());
+			bIsWarpTargetActive = true;
+		}
+		else if (bIsWarpTargetActive)
+		{
+			WarpingComponent->RemoveWarpTarget(FName("TranslationTarget"));
+			WarpingComponent->RemoveWarpTarget(FName("RotationTarget"));
+			bIsWarpTargetActive = false;
+		}
 	}
 }
-
 
 // Public function
 
@@ -386,6 +405,11 @@ void ABaseCharacter::Attack()
 		CombatTarget = nullptr;
 	}
 	
+}
+
+void ABaseCharacter::SetCombatTarget(AActor* NewActor)
+{
+	 CombatTarget = NewActor;
 }
 
 void ABaseCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable)

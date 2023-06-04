@@ -125,15 +125,7 @@ void AWeapon::Tick(float DeltaTime)
 void AWeapon::AttachMeshToSocket(USceneComponent* InParent, FName InSocketName)
 {
 	FAttachmentTransformRules const TransformRules(EAttachmentRule::SnapToTarget,true);
-	ItemMesh->AttachToComponent(InParent, TransformRules, InSocketName);
-}
-
-void AWeapon::PlaySoundPickup(const bool EnableSound) const
-{
-	if (EnableSound && EquipSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, EquipSound,GetActorLocation());
-	}
+	GetItemMesh()->AttachToComponent(InParent, TransformRules, InSocketName);
 }
 
 void AWeapon::Equip(USceneComponent* InParent, FName InSocketName,AActor* NewOwner, APawn* NewInstigator,const bool EnableSound)

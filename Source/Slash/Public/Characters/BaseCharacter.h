@@ -6,6 +6,7 @@
 #include "CharracterTypes.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
+#include "Interfaces/TargetInterface.h"
 #include "BaseCharacter.generated.h"
 
 
@@ -15,7 +16,7 @@ class UAnimMontage;
 class UMotionWarpingComponent;
 
 UCLASS(Abstract)
-class SLASH_API ABaseCharacter : public ACharacter, public IHitInterface
+class SLASH_API ABaseCharacter : public ACharacter, public IHitInterface, public ITargetInterface
 {
 	GENERATED_BODY()
 
@@ -24,6 +25,13 @@ public:
 
 private:
 
+	// Combat Stat
+	
+	UPROPERTY(EditAnywhere, Category=Combat)
+	double CombatRadius{1000.f};
+
+	UPROPERTY(EditAnywhere, Category=Combat)
+	double AttackRadius{150.f};
 	
 	/**
 	*Animation Montage
@@ -59,10 +67,10 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category=VisualEffects)
 	TObjectPtr<UParticleSystem> HitParticle;
 
+	bool bIsWarpTargetActive{};
 	
 
-	
-	
+
 
 protected:
 
@@ -158,6 +166,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void PutWeaponRightHand();
 
+	bool IsInsideCombatRadius() const;
+	bool IsInsideAttackRadius() const;
 
 public:
 
@@ -169,7 +179,8 @@ public:
 	void Dead();
 	virtual void Death();
 	virtual void Attack();
-	
+
+	void SetCombatTarget(AActor* NewActor);
 	
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable);

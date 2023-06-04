@@ -79,6 +79,8 @@ public:
 
 	virtual void AddGold(ATresor* Tresor) override;
 
+	virtual void AddHeart(AHeart* Heart) override;
+
 	bool IsOccupied() const;
 
 	bool PickUpWeapon();
@@ -89,4 +91,6 @@ public:
 	void SwitchWeapon();
 
 	void SelectTargetPossible();
+
+	virtual void SetTarget_Implementation(AActor* Actor) override;
 };

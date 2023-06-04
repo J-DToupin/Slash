@@ -3,22 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item.h"
-#include "Soul.generated.h"
-
-class UNiagaraSystem;
+#include "Items/Item.h"
+#include "Heart.generated.h"
 
 UCLASS()
-class SLASH_API ASoul : public AItem
+class SLASH_API AHeart : public AItem
 {
 	GENERATED_BODY()
 
-private:
-	int32 SoulCount{1};
 
-
-
-	ASoul();
+	UPROPERTY(EditAnywhere)
+	int32 HealthCount{35};
+	
+	AHeart();
 
 protected:
 	virtual void BeginPlay() override;
@@ -27,15 +24,10 @@ protected:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 
 public:
-	
-	int32 GetSoulCount() const
+	float GetHealthCount() const
 	{
-		return SoulCount;
+		return HealthCount;
 	}
 
-	void SetSoulCount(int32 NewSoulCount)
-	{
-		this->SoulCount = NewSoulCount;
-	}
 	
 };

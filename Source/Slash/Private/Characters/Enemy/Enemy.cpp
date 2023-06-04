@@ -9,6 +9,8 @@
 #include "HUD/HealthBarComponent.h"
 #include "Perception/PawnSensingComponent.h"
 #include "Component/AttributeComponent.h"
+#include "HUD/TargetArrowComponent.h"
+#include "Items/Soul.h"
 #include "Items/Weapons/Weapon.h"
 
 // Sets default values
@@ -23,6 +25,10 @@ AEnemy::AEnemy()
 	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
 	HealthBarWidget->SetupAttachment(GetRootComponent());
 	HideHealthBar();
+
+	TargetArrowWidget = CreateDefaultSubobject<UTargetArrowComponent>(TEXT("TargetArrow"));
+	TargetArrowWidget->SetupAttachment(GetRootComponent());
+	TargetArrowWidget->SetVisibility(false);
 	
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 }
@@ -51,16 +57,36 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint,  AActor* Hitter)
 	ClearAttackTimer();
 }
 
+void AEnemy::SetVisibilityTargetArrow_Implementation(bool bIsVisible)
+{
+	Super::SetVisibilityTargetArrow_Implementation(bIsVisible);
+
+	if (TargetArrowWidget)
+	{
+		TargetArrowWidget->SetVisibility(bIsVisible);
+	}
+}
+
+
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-						 AActor* DamageCauser)
+                         AActor* DamageCauser)
 {
 
 	HandleDamage(DamageAmount);
-	CombatTarget = EventInstigator->GetPawn();
-
+	if (EventInstigator->GetPawn())
+	{
+		CombatTarget = EventInstigator->GetPawn();
+	}
+	
 	if (!IsAlive())
 	{
 		Death();
+		
+		if (EventInstigator->GetPawn()->Implements<UTargetInterface>())
+		{
+			ITargetInterface::Execute_SetTarget(EventInstigator->GetPawn(), nullptr);
+		}
+		
 		return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	}
 	
@@ -170,6 +196,18 @@ void AEnemy::HandleDamage(const float DamageAmount)
 	
 }
 
+void AEnemy::DropSoul()
+{
+	if (SoulClass)
+	{
+		if (ASoul* Soul = GetWorld()->SpawnActor<ASoul>(SoulClass, GetActorLocation(), FRotator::ZeroRotator))
+		{
+			Soul->SetSoulCount(Attribute->GetSoul());
+		}
+		
+	}
+}
+
 void AEnemy::Death()
 {
 	Super::Death();
@@ -177,7 +215,10 @@ void AEnemy::Death()
 	ClearAttackTimer();
 	GetWorldTimerManager().ClearTimer(PatrolTimer);
 	HealthBarWidget->DestroyComponent();
+	TargetArrowWidget->DestroyComponent();
 	SetLifeSpan(LifeSpan);
+
+	DropSoul();
 }
 
 void AEnemy::InitializeEnemy()
@@ -293,16 +334,6 @@ void AEnemy::StartAttacking()
 	EnemyState = EEnemyState::EES_Attacking;
 	const float AttackTime = FMath::RandRange(AttackMin, AttackMax);
 	GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::Attack, AttackTime);
-}
-
-bool AEnemy::IsInsideCombatRadius() const
-{
-	return InTargetRange(CombatTarget, CombatRadius);
-}
-
-bool AEnemy::IsInsideAttackRadius() const
-{
-	return InTargetRange(CombatTarget, AttackRadius);
 }
 
 bool AEnemy::IsDeath() const

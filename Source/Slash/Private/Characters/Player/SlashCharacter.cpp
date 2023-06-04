@@ -8,6 +8,8 @@
 #include "GroomComponent.h"
 #include "Component/AttributeComponent.h"
 #include "Components/BoxComponent.h"
+#include "Items/Soul.h"
+#include "Items/Tresor/Heart.h"
 #include "Items/Tresor/Tresor.h"
 #include "Items/Weapons/Weapon.h"
 
@@ -50,9 +52,11 @@ float ASlashCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 	AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
-	if (CombatTarget == nullptr)
+	if (CombatTarget == nullptr && EventInstigator->GetPawn()->Implements<UTargetInterface>())
 	{
 		CombatTarget = EventInstigator->GetPawn();
+
+		ITargetInterface::Execute_SetVisibilityTargetArrow(EventInstigator->GetPawn(), true);
 	}
 
 	if (!IsAlive())
@@ -139,7 +143,7 @@ void ASlashCharacter::AddSouls(ASoul* Soul)
 
 	if (Attribute)
 	{
-		Attribute->AddSoul(1);
+		Attribute->AddSoul(Soul->GetSoulCount());
 	}
 	
 }
@@ -151,6 +155,16 @@ void ASlashCharacter::AddGold(ATresor* Tresor)
 	if (Attribute)
 	{
 		Attribute->AddGold(Tresor->GetGold());
+	}
+}
+
+void ASlashCharacter::AddHeart(AHeart* Heart)
+{
+	IPickUpInterface::AddHeart(Heart);
+
+	if (Attribute)
+	{
+		Attribute->AddHealth(Heart->GetHealthCount());
 	}
 }
 
@@ -201,28 +215,47 @@ void ASlashCharacter::SwitchWeapon()
 
 void ASlashCharacter::SelectTargetPossible()
 {
+	
 	if (TargetPossible.IsEmpty()) return;
+
+	if (CombatTarget && CombatTarget->Implements<UTargetInterface>())
+	{
+		ITargetInterface::Execute_SetVisibilityTargetArrow(CombatTarget, false);
+	}
 
 	if (TargetPossible.Num() == 1)
 	{
 		CombatTarget = TargetPossible[0];
-		return;
 	}
-
-	int32 MinDistance{999999};
-
-	for (AActor* Actor : TargetPossible)
+	else
 	{
-		const int32 Distance = FVector::Distance(Actor->GetActorLocation(), GetActorLocation());
-		
-		if (MinDistance > Distance)
+		int32 MinDistance{999999};
+
+		for (AActor* Actor : TargetPossible)
 		{
-			MinDistance = Distance;
-			CombatTarget = Actor;
-		}
+			const int32 Distance = FVector::Distance(Actor->GetActorLocation(), GetActorLocation());
 		
+			if (MinDistance > Distance)
+			{
+				MinDistance = Distance;
+				CombatTarget = Actor;
+			}
+		
+		}
 	}
-	
+
+	if (CombatTarget && CombatTarget->Implements<UTargetInterface>())
+	{
+		ITargetInterface::Execute_SetVisibilityTargetArrow(CombatTarget, true);
+	}
 	//UKismetSystemLibrary::LineTraceSingle()
+}
+
+void ASlashCharacter::SetTarget_Implementation(AActor* Actor)
+{
+	Super::SetTarget_Implementation(Actor);
+
+	SetCombatTarget(Actor);
+	
 }
 

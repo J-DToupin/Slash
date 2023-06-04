@@ -18,3 +18,7 @@ void IPickUpInterface::AddSouls(ASoul* Soul)
 void IPickUpInterface::AddGold(ATresor* Tresor)
 {
 }
+
+void IPickUpInterface::AddHeart(AHeart* Heart)
+{
+}

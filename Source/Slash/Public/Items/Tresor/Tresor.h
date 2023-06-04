@@ -16,10 +16,7 @@ public:
 	ATresor();
 
 private:
-
-	UPROPERTY(EditAnywhere, Category=Sound)
-	TObjectPtr<USoundWave> PickUpSound;
-
+	
 	UPROPERTY(EditAnywhere, Category="Treasure Properties")
 	int32 Gold{};
 

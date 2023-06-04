@@ -8,6 +8,8 @@
 #include "Enemy.generated.h"
 
 
+class UTargetArrowComponent;
+class ASoul;
 class AWeapon;
 class UPawnSensingComponent;
 class AAIController;
@@ -23,6 +25,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
+
+	virtual void SetVisibilityTargetArrow_Implementation(bool bIsVisible) override;
 	
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
@@ -43,6 +47,7 @@ protected:
 	virtual void MontageEnd() override;
 	
 	virtual void HandleDamage(const float DamageAmount) override;
+	void DropSoul();
 	virtual void Death() override;
 	
 private:
@@ -62,9 +67,7 @@ private:
 	void StartPatrolling();
 	void StartChasing();
 	void StartAttacking();
-
-	bool IsInsideCombatRadius() const;
-	bool IsInsideAttackRadius() const;
+	
 
 	bool IsDeath() const;
 	bool IsPatrolling() const;
@@ -85,13 +88,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float LifeSpan = 8.f;
-
-	UPROPERTY(EditAnywhere, Category=Combat)
-	double CombatRadius{1000.f};
-
-	UPROPERTY(EditAnywhere, Category=Combat)
-	double AttackRadius{150.f};
-
+	
 	//Combat
 	
 	FTimerHandle AttackTimer{};
@@ -110,9 +107,15 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UHealthBarComponent> HealthBarWidget;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UTargetArrowComponent> TargetArrowWidget;
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AWeapon> WeaponClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ASoul> SoulClass;
 	
 	/**
  * Navigation

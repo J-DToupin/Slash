@@ -15,6 +15,8 @@ enum class EItemState : uint8
 
 class USphereComponent;
 class UNiagaraComponent;
+class UNiagaraSystem;
+
 UCLASS()
 class SLASH_API AItem : public AActor
 {
@@ -30,18 +32,30 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> SphereComponent;
 
-protected:
-
-	void DisableSphereCollision() const;
-
-	void DisableNiagaraComponent() const;
-	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> ItemMesh;
 
 	UPROPERTY(EditAnywhere, Category=Niagara)
 	TObjectPtr<UNiagaraComponent> NiagaraComponent;
 
+	UPROPERTY(EditAnywhere, Category=Niagara)
+	TObjectPtr<UNiagaraSystem> PickupNiagaraComponent;
+
+	UPROPERTY(EditAnywhere, Category=Sound)
+	TObjectPtr<USoundBase> PickupSound;
+
+protected:
+
+	void PlaySoundPickup(const bool EnableSound = true) const;
+	
+	void DisableSphereCollision() const;
+
+	void DisableNiagaraComponent() const;
+
+	void SpawnPickupSystem() const;
+
+	UStaticMeshComponent* GetItemMesh() const;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Sine Parameters")
 	float Amplitude{};
 
@@ -72,7 +86,7 @@ protected:
 public:
 	
 	virtual void Tick(float DeltaTime) override;
-
+	
 };
 
 template <typename T>

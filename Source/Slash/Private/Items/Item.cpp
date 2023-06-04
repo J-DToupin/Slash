@@ -5,7 +5,9 @@
 
 #include "Components/SphereComponent.h"
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Interfaces/PickUpInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -28,6 +30,14 @@ AItem::AItem() : Amplitude(0.25f), TimeConstant(5.0f)
 
 }
 
+void AItem::PlaySoundPickup(const bool EnableSound) const
+{
+	if (EnableSound && PickupSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, PickupSound,GetActorLocation());
+	}
+}
+
 void AItem::DisableSphereCollision() const
 {
 	if (SphereComponent)
@@ -43,6 +53,18 @@ void AItem::DisableNiagaraComponent() const
 		NiagaraComponent->Deactivate();
 	}
 }
+
+void AItem::SpawnPickupSystem() const
+{
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, PickupNiagaraComponent, GetActorLocation());
+
+}
+
+UStaticMeshComponent* AItem::GetItemMesh() const
+{
+	return ItemMesh;
+}
+
 
 // Called when the game starts or when spawned
 void AItem::BeginPlay()
@@ -119,4 +141,5 @@ void AItem::Tick(float DeltaTime)
 	// GEngine->AddOnScreenDebugMessage(1, 60.f,FColor::Orange,FString::Printf(TEXT("Name = %s"), *Name));
 
 }
+
 
