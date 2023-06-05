@@ -82,6 +82,11 @@ void ASlashController::Attack()
 	SlashCharacter->Attack();
 }
 
+void ASlashController::Dodge()
+{
+	SlashCharacter->Dodge();
+}
+
 void ASlashController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -96,7 +101,8 @@ void ASlashController::SetupInputComponent()
 
 		Input->BindAction(PicUpAction, ETriggerEvent::Started, this, &ASlashController::EKeyPressed);
 		Input->BindAction(AttackAction, ETriggerEvent::Started, this, &ASlashController::Attack);
-		
+		Input->BindAction(DodgeAction, ETriggerEvent::Started, this, &ASlashController::Dodge);
+
 		Input->BindAction(TargetAction, ETriggerEvent::Started, this, &ASlashController::SelectTarget);
 	}
 }

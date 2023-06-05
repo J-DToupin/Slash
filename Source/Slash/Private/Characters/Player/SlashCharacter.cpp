@@ -9,7 +9,6 @@
 #include "Component/AttributeComponent.h"
 #include "Components/BoxComponent.h"
 #include "Items/Soul.h"
-#include "Items/Tresor/Heart.h"
 #include "Items/Tresor/Tresor.h"
 #include "Items/Weapons/Weapon.h"
 
@@ -97,20 +96,37 @@ void ASlashCharacter::BeginPlay()
 	
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ASlashCharacter::OnBoxOverlap);
 	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ASlashCharacter::OnBoxEndOverlap);
+
+	GetWorldTimerManager().SetTimer(TimerStaminaRegen,this, &ASlashCharacter::StaminaRegen, 1.0, true);
 }
 
 void ASlashCharacter::Disarm()
 {
-	PLayUnEquipMontage();
+	PlayUnEquipMontage();
 	CharacterEquipState = ECharacterEquipState::ECS_Unequipped;
 	ActionState = EActionState::EAS_EquippingWeapon;
 }
 
 void ASlashCharacter::Arm()
 {
-	PLayEquipMontage();
+	PlayEquipMontage();
 	CharacterEquipState = ECharacterEquipState::ECS_EquippedOneHandedWeapon;
 	ActionState = EActionState::EAS_EquippingWeapon;
+}
+
+void ASlashCharacter::StaminaRegen() const
+{
+	if (Attribute && Attribute->GetPercentStamina() < 1)
+	{
+		if (Attribute->IsStaminaFull())
+		{
+			GetWorldTimerManager().PauseTimer(TimerStaminaRegen);
+		}
+		else
+		{
+			Attribute->AddStamina(StaminaSecond);
+		}
+	}
 }
 
 
@@ -154,17 +170,17 @@ void ASlashCharacter::AddGold(ATresor* Tresor)
 
 	if (Attribute)
 	{
-		Attribute->AddGold(Tresor->GetGold());
+		Attribute->AddGold(Tresor->GetValue());
 	}
 }
 
-void ASlashCharacter::AddHeart(AHeart* Heart)
+void ASlashCharacter::AddHealth(ATresor* Tresor)
 {
-	IPickUpInterface::AddHeart(Heart);
+	IPickUpInterface::AddHealth(Tresor);
 
 	if (Attribute)
 	{
-		Attribute->AddHealth(Heart->GetHealthCount());
+		Attribute->AddHealth(Tresor->GetValue());
 	}
 }
 
@@ -195,9 +211,26 @@ bool ASlashCharacter::PickUpWeapon()
 
 void ASlashCharacter::Jump()
 {
-	if (ActionState != EActionState::EAS_Dead)
+	if (ActionState == EActionState::EAS_Unoccupied)
 	{
 		Super::Jump();
+	}
+}
+
+bool ASlashCharacter::CanDoge()
+{
+	return DodgeMontage && Attribute && Attribute->GetStamina() > DodgeStamina && ActionState ==
+		EActionState::EAS_Unoccupied;
+}
+
+void ASlashCharacter::Dodge()
+{
+	if (CanDoge())
+	{
+		ActionState = EActionState::EAS_Dodging;
+		PlayMontage(DodgeMontage);
+		Attribute->AddStamina(-DodgeStamina);
+		GetWorldTimerManager().UnPauseTimer(TimerStaminaRegen);
 	}
 }
 

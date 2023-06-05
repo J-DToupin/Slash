@@ -39,6 +39,10 @@ class SLASH_API ASlashController : public APlayerController
 	UPROPERTY(EditAnywhere, Category= "Input")
 	TObjectPtr<UInputAction> TargetAction;
 
+	UPROPERTY(EditAnywhere, Category= "Input")
+	TObjectPtr<UInputAction> DodgeAction;
+
+
 public:
 	ASlashController();
 
@@ -56,6 +60,7 @@ protected:
 	void Jump();
 	void StopJumping();
 	void Attack();
+	void Dodge();
 
 	virtual void SetupInputComponent() override;
 	

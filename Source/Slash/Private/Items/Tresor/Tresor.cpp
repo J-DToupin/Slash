@@ -24,7 +24,7 @@ void ATresor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 {
 	if (IPickUpInterface* PickUpInterface = Cast<IPickUpInterface>(OtherActor))
 	{
-		PickUpInterface->AddGold(this);
+		SelectType(PickUpInterface);
 		PlaySoundPickup();
 		GetWorldTimerManager().ClearTimer(TresorTimerHandle);
 		this->Destroy();
@@ -32,12 +32,28 @@ void ATresor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 	
 }
 
+void ATresor::SelectType(IPickUpInterface* PickUpInterface)
+{
+	switch (TreasureType)
+	{
+	case ETreasureType::ETT_Gold:
+		PickUpInterface->AddGold(this);
+		break;
+	case ETreasureType::ETT_Health:
+		PickUpInterface->AddHealth(this);
+		break;
+
+		default:
+			break;
+	}
+}
+
 void ATresor::TresorRotation()
 {
 	AddActorWorldRotation(FRotator(0.f,2.f,0.f));
 }
 
-int32 ATresor::GetGold() const
+int32 ATresor::GetValue() const
 {
-	return Gold;
+	return Value;
 }

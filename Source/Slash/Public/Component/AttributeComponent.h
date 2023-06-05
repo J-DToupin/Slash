@@ -45,9 +45,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Actor Attributes")
 	int32 Soul{0};
-
-
-private:
+	
 	UPROPERTY(EditAnywhere, Category="Actor Attributes")
 	int32 Gold{0};
 
@@ -60,11 +58,17 @@ public:
 	
 	float GetPercentStamina() const;
 
+	float GetStamina() const;
+
 	void AddSoul(const int32 Delta);
 	
 	void AddGold(const int32 Delta);
 
 	bool IsAlive() const;
+
+	bool IsTired() const;
+
+	bool IsStaminaFull() const;
 	
 	[[nodiscard]] float GetMaxHealth() const
 	{

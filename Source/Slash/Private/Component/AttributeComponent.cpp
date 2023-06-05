@@ -35,6 +35,11 @@ float UAttributeComponent::GetPercentStamina() const
 	return Stamina / MaxStamina;
 }
 
+float UAttributeComponent::GetStamina() const
+{
+	return Stamina;
+}
+
 void UAttributeComponent::AddSoul(const int32 Delta)
 {
 	Soul += Delta;
@@ -52,6 +57,16 @@ void UAttributeComponent::AddGold(const int32 Delta)
 bool UAttributeComponent::IsAlive() const
 {
 	return  Health > 0;
+}
+
+bool UAttributeComponent::IsTired() const
+{
+	return Stamina == 0;
+}
+
+bool UAttributeComponent::IsStaminaFull() const
+{
+	return Stamina == MaxStamina;
 }
 
 

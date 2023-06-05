@@ -19,6 +19,6 @@ void IPickUpInterface::AddGold(ATresor* Tresor)
 {
 }
 
-void IPickUpInterface::AddHeart(AHeart* Heart)
+void IPickUpInterface::AddHealth(ATresor* Tresor)
 {
 }

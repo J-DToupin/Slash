@@ -26,6 +26,17 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 private:
+
+	//Stat
+
+	UPROPERTY(EditAnywhere)
+	int32 DodgeStamina{25};
+
+	UPROPERTY(EditAnywhere)
+	int32 StaminaSecond{5};
+
+	UPROPERTY()
+	FTimerHandle TimerStaminaRegen;
 	
 	/**
 	 * @brief Components
@@ -52,6 +63,10 @@ private:
 	UPROPERTY()
 	TArray<AActor*> TargetPossible;
 
+	// Montage
+	UPROPERTY(EditDefaultsOnly, Category=Montages)
+	TObjectPtr<UAnimMontage> DodgeMontage;
+
 protected:
 	
 
@@ -68,6 +83,8 @@ protected:
 
 	void Disarm();
 	void Arm();
+
+	void StaminaRegen() const;
 	
 public:	
 	
@@ -79,7 +96,7 @@ public:
 
 	virtual void AddGold(ATresor* Tresor) override;
 
-	virtual void AddHeart(AHeart* Heart) override;
+	virtual void AddHealth(ATresor* Tresor) override;
 
 	bool IsOccupied() const;
 
@@ -87,6 +104,9 @@ public:
 
 
 	virtual void Jump() override;
+	bool CanDoge();
+
+	void Dodge();
 	
 	void SwitchWeapon();
 

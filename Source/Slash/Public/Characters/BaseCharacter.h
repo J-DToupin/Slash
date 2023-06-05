@@ -105,17 +105,17 @@ protected:
 	 * Play montage function
 	*/
 	
-	virtual void PLayAttackMontage();
+	virtual void PlayAttackMontage();
 	
-	void PLayEquipMontage();
+	void PlayEquipMontage();
 	
-	void PLayUnEquipMontage();
+	void PlayUnEquipMontage();
 	
-	void PLayMontage(const FName& NameSelection, UAnimMontage* Montage);
+	void PlayMontage(UAnimMontage* Montage,const FName& NameSelection = "Default");
 
 	void StopMontage(UAnimMontage* Montage);
 	
-	int32 PLayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage);
+	int32 PlayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage);
 	
 	void PlayDeathMontage();
 
@@ -130,7 +130,7 @@ protected:
 	
 	void DirectionalHitReact(const FVector& ImpactPoint);
 
-	void PLayHitSound(const FVector& ImpactPoint) const;
+	void PlayHitSound(const FVector& ImpactPoint) const;
 
 	void SpawnHitParticles(const FVector& ImpactPoint) const;
 

@@ -30,5 +30,5 @@ public:
 	virtual void SetOverlappingItem(AItem* Item);
 	virtual void AddSouls(ASoul* Soul);
 	virtual void AddGold(ATresor* Tresor);
-	virtual void AddHeart(AHeart* Heart);
+	virtual void AddHealth(ATresor* Tresor);
 };

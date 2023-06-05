@@ -46,22 +46,22 @@ void ABaseCharacter::BeginPlay()
 	 * Play montage function
 	*/
 
-void ABaseCharacter::PLayAttackMontage()
+void ABaseCharacter::PlayAttackMontage()
 {
-	PLayRandomMontage(AttackSelection, AttackMontage);
+	PlayRandomMontage(AttackSelection, AttackMontage);
 }
 
-void ABaseCharacter::PLayEquipMontage()
+void ABaseCharacter::PlayEquipMontage()
 {
-	PLayMontage(FName("Equip"), EquipMontage);
+	PlayMontage(EquipMontage, FName("Equip"));
 }
 
-void ABaseCharacter::PLayUnEquipMontage()
+void ABaseCharacter::PlayUnEquipMontage()
 {
-	PLayMontage(FName("UnEquip"), EquipMontage);
+	PlayMontage(EquipMontage,FName("UnEquip"));
 }
 
-void ABaseCharacter::PLayMontage(const FName& NameSelection, UAnimMontage* Montage)
+void ABaseCharacter::PlayMontage(UAnimMontage* Montage, const FName& NameSelection)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	
@@ -92,20 +92,20 @@ void ABaseCharacter::StopMontage(UAnimMontage* Montage)
 	
 }
 
-int32 ABaseCharacter::PLayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage)
+int32 ABaseCharacter::PlayRandomMontage(const TArray<FName>& ArraySelection, UAnimMontage* Montage)
 {
 	if (ArraySelection.IsEmpty()) return -1;
 
 	const int32 SelectionIndex = FMath::RandRange(0,ArraySelection.Num() - 1);
 
-	PLayMontage(ArraySelection[SelectionIndex], Montage);
+	PlayMontage(Montage,ArraySelection[SelectionIndex]);
 
 	return SelectionIndex;
 }
 
 void ABaseCharacter::PlayDeathMontage()
 {
-	PLayRandomMontage(DeathSelection, DeathMontage);
+	PlayRandomMontage(DeathSelection, DeathMontage);
 }
 
 void ABaseCharacter::OnDeathMontageBlendingOut()
@@ -207,7 +207,7 @@ void ABaseCharacter::DirectionalHitReact(const FVector& ImpactPoint)
 		Section = FName("HitRight");
 	}
 
-	PLayMontage(Section, HitMontage);
+	PlayMontage( HitMontage,Section);
 	
 	if (GEngine)
 	{
@@ -215,7 +215,7 @@ void ABaseCharacter::DirectionalHitReact(const FVector& ImpactPoint)
 	}
 }
 
-void ABaseCharacter::PLayHitSound(const FVector& ImpactPoint) const
+void ABaseCharacter::PlayHitSound(const FVector& ImpactPoint) const
 {
 	if (HitSound)
 	{
@@ -373,7 +373,7 @@ void ABaseCharacter::GetHit_Implementation(const FVector& ImpactPoint,  AActor* 
 	}
 
 	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
-	PLayHitSound(ImpactPoint);
+	PlayHitSound(ImpactPoint);
 	SpawnHitParticles(ImpactPoint);
 }
 
@@ -396,7 +396,7 @@ void ABaseCharacter::Attack()
 	
 	if (CanAttack())
 	{
-		PLayAttackMontage();
+		PlayAttackMontage();
 		ActionState = EActionState::EAS_Attacking;
 	}
 
