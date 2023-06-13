@@ -6,10 +6,10 @@
 #include "Components/ActorComponent.h"
 #include "AttributeComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, instigatorActor, UAttributeComponent*, OwnimComp, float, Heath, float, Delta);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnStaminaChanged, AActor*, instigatorActor, UAttributeComponent*, OwnimComp, float, Stamina, float, Delta);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnSoulChanged, AActor*, instigatorActor, UAttributeComponent*, OwnimComp, int32, Soul, int32, Delta);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnGoldChanged, AActor*, instigatorActor, UAttributeComponent*, OwnimComp, int32, Gold, int32, Delta);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, InstigatorActor, UAttributeComponent*, OwnimComp, float, Heath, float, Delta);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnStaminaChanged, AActor*, InstigatorActor, UAttributeComponent*, OwnimComp, float, Stamina, float, Delta);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnSoulChanged, AActor*, InstigatorActor, UAttributeComponent*, OwnimComp, int32, Soul, int32, Delta);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnGoldChanged, AActor*, InstigatorActor, UAttributeComponent*, OwnimComp, int32, Gold, int32, Delta);
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -23,7 +23,7 @@ public:
 	UPROPERTY()
 	FOnHealthChanged OnHealthChanged;
 	UPROPERTY()
-	FOnHealthChanged OnStaminaChanged;
+	FOnStaminaChanged OnStaminaChanged;
 	UPROPERTY()
 	FOnSoulChanged OnSoulChanged;
 	UPROPERTY()

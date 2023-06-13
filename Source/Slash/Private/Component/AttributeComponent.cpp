@@ -13,7 +13,7 @@ UAttributeComponent::UAttributeComponent()
 
 void UAttributeComponent::AddHealth(const float Delta)
 {
-	Health = FMath::Clamp(Health + Delta, 0, MaxHealth);
+	Health = FMath::Clamp(Health + Delta, 0.f, MaxHealth);
 
 	OnHealthChanged.Broadcast(nullptr, this, Health, Delta);
 }
@@ -25,7 +25,7 @@ float UAttributeComponent::GetPercentHealth() const
 
 void UAttributeComponent::AddStamina(const float Delta)
 {
-	Stamina = FMath::Clamp(Stamina + Delta, 0, MaxStamina);
+	Stamina = FMath::Clamp(Stamina + Delta, 0.f, MaxStamina);
 
 	OnStaminaChanged.Broadcast(nullptr, this, Stamina, Delta);
 }

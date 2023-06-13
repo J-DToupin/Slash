@@ -13,10 +13,6 @@ class SLASH_API UTargetArrowComponent : public UWidgetComponent
 {
 	GENERATED_BODY()
 
-private:
-	UPROPERTY()
-	TObjectPtr<UUserWidget> ArrowWidget;
-
 public:
 	// Sets default values for this component's properties
 	UTargetArrowComponent();

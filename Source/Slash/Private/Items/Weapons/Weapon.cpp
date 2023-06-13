@@ -43,8 +43,17 @@ AWeapon::AWeapon()
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+	
+}
 
-	WeaponBox->OnComponentBeginOverlap.AddDynamic(this,&AWeapon::OnBoxOverlap);
+void AWeapon::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (WeaponBox)
+	{
+		WeaponBox->OnComponentBeginOverlap.AddDynamic(this,&AWeapon::OnBoxOverlap);
+	}
 }
 
 

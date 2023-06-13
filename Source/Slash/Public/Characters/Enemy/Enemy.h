@@ -36,6 +36,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void PostInitializeComponents() override;
 	
 	UFUNCTION()
 	void PawnSeen(APawn* Target);
@@ -80,13 +82,13 @@ private:
 	
 	// Stats
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category=Combat)
 	float PatrollingSpeed = 125.f;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category=Combat)
 	float ChasingSpeed = 300.f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category=Combat)
 	float LifeSpan = 8.f;
 	
 	//Combat
@@ -97,6 +99,11 @@ private:
 	float AttackMin = 0.5f;
 	UPROPERTY(EditAnywhere, Category=Combat)
 	float AttackMax = 1.f;
+
+	UPROPERTY(EditAnywhere, Category=Combat)
+	float AcceptanceRadius = 60.f;
+
+	
 	
 	/**
 	 * @brief Components
@@ -131,7 +138,7 @@ private:
 	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
 	TArray<AActor*> PatrolTargets;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="AI Navigation")
 	double PatrolRadius{200.f};
 
 	FTimerHandle PatrolTimer;

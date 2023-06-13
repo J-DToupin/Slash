@@ -30,6 +30,7 @@ ASlashCharacter::ASlashCharacter()
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ViewCamera"));
 	ViewCamera->SetupAttachment(SpringArmComponent);
 
+	
 	Hair = CreateDefaultSubobject<UGroomComponent>(TEXT("Hair"));
 	Hair->SetupAttachment(GetMesh());
 	Hair->AttachmentName = FString("head");
@@ -44,7 +45,6 @@ ASlashCharacter::ASlashCharacter()
 	BoxComponent->SetupAttachment(GetRootComponent());
 	BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	BoxComponent->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
-
 }
 
 float ASlashCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -94,10 +94,21 @@ void ASlashCharacter::BeginPlay()
 
 	Tags.Add(FName("PlayerCharacter"));
 	
-	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ASlashCharacter::OnBoxOverlap);
-	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ASlashCharacter::OnBoxEndOverlap);
+	
 
 	GetWorldTimerManager().SetTimer(TimerStaminaRegen,this, &ASlashCharacter::StaminaRegen, 1.0, true);
+}
+
+void ASlashCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (BoxComponent)
+	{
+		BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ASlashCharacter::OnBoxOverlap);
+		BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ASlashCharacter::OnBoxEndOverlap);
+	}
+	
 }
 
 void ASlashCharacter::Disarm()
@@ -126,6 +137,52 @@ void ASlashCharacter::StaminaRegen() const
 		{
 			Attribute->AddStamina(StaminaSecond);
 		}
+	}
+}
+
+// void ASlashCharacter::SetTimeLine()
+// {
+// 	if (CurveFloat)
+// 	{
+// 		FOnTimelineFloat TimelineFloat;
+// 		TimelineFloat.BindUFunction(this, FName("TimeLineProgress"));
+// 		CurveFTimeline.AddInterpFloat(CurveFloat, TimelineFloat);
+//
+// 		CurveFTimeline.PlayFromStart();
+// 	}
+// }
+//
+// void ASlashCharacter::TimeLineProgress(float Value)
+// {
+// 	
+// 	if (SpringArmComponent)
+// 	{
+// 		const FVector NewLocation = FMath::Lerp(EndCamera, StartCamera, Value);
+// 		SpringArmComponent->SocketOffset = NewLocation;
+//
+// 		const FVector End = EndCamera;
+// 		EndCamera = StartCamera;
+// 		StartCamera = End;
+// 		
+// 	}
+// }
+
+void ASlashCharacter::Aim() const
+{
+	if (SpringArmComponent)
+	{
+		SpringArmComponent->SocketOffset.Y = 70.f;
+		SpringArmComponent->TargetArmLength = 150;
+		
+	}
+}
+
+void ASlashCharacter::OffAim() const
+{
+	if (SpringArmComponent)
+	{
+		SpringArmComponent->SocketOffset.Y = 0.f;
+		SpringArmComponent->TargetArmLength = 300;
 	}
 }
 

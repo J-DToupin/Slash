@@ -70,10 +70,18 @@ UStaticMeshComponent* AItem::GetItemMesh() const
 void AItem::BeginPlay()
 {
 	Super::BeginPlay();
-
-	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
-	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
 	
+}
+
+void AItem::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (SphereComponent)
+	{
+		SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
+		SphereComponent->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
+	}
 }
 
 float AItem::TransformedSin()

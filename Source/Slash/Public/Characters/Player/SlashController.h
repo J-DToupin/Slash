@@ -6,10 +6,14 @@
 #include "GameFramework/PlayerController.h"
 #include "SlashController.generated.h"
 
+class UPlayerOverlay;
 class ASlashCharacter;
 struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAimActionPress, AActor*, instigatorActor, ASlashController*, OwinComp, bool, Press);
+
 
 UCLASS()
 class SLASH_API ASlashController : public APlayerController
@@ -42,9 +46,18 @@ class SLASH_API ASlashController : public APlayerController
 	UPROPERTY(EditAnywhere, Category= "Input")
 	TObjectPtr<UInputAction> DodgeAction;
 
+	UPROPERTY(EditAnywhere, Category= "Input")
+	TObjectPtr<UInputAction> AimAction;
+
+
+	UPROPERTY()
+	TObjectPtr<UPlayerOverlay> PlayerOverlay;
 
 public:
 	ASlashController();
+
+	UPROPERTY()
+	FOnAimActionPress OnAimActionPress;
 
 protected:
 	virtual void BeginPlay() override;
@@ -62,6 +75,9 @@ protected:
 	void Attack();
 	void Dodge();
 
-	virtual void SetupInputComponent() override;
 	
+	void Aim();
+	void OffAim();
+
+	virtual void SetupInputComponent() override;
 };

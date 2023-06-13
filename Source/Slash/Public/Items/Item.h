@@ -64,6 +64,8 @@ protected:
 	
 	virtual void BeginPlay() override;
 
+	virtual void PostInitializeComponents() override;
+
 	UFUNCTION(BlueprintPure)
 	float TransformedSin();
 

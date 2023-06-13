@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Characters/BaseCharacter.h"
+#include "Components/TimelineComponent.h"
 #include "Interfaces/PickUpInterface.h"
 #include "SlashCharacter.generated.h"
 
 
+
+class UTimelineComponent;
 class UBoxComponent;
 class UCameraComponent;
 class USpringArmComponent;
@@ -62,11 +65,26 @@ private:
 
 	UPROPERTY()
 	TArray<AActor*> TargetPossible;
-
+	
 	// Montage
 	UPROPERTY(EditDefaultsOnly, Category=Montages)
 	TObjectPtr<UAnimMontage> DodgeMontage;
 
+	// TimeLine
+
+	UPROPERTY()
+	TObjectPtr<UTimelineComponent> TimelineComponent;
+	
+	FTimeline CurveFTimeline;
+	
+	UPROPERTY(EditAnywhere, Category=Timeline)
+	TObjectPtr<UCurveFloat> CurveFloat;
+
+	UPROPERTY(EditAnywhere, Category=Timeline)
+	FVector StartCamera{};
+	UPROPERTY(EditAnywhere, Category=Timeline)
+	FVector EndCamera{150.f, 50.f,0};
+	
 protected:
 	
 
@@ -81,12 +99,25 @@ protected:
 	
 	virtual void BeginPlay() override;
 
+	virtual void PostInitializeComponents() override;
+
 	void Disarm();
 	void Arm();
 
 	void StaminaRegen() const;
-	
-public:	
+
+public:
+
+	//Timeline
+	// void SetTimeLine();
+	// UFUNCTION()
+	// void TimeLineProgress(float Value);
+
+
+	void Aim() const;
+	void OffAim() const;
+
+
 	
 	virtual void Tick(float DeltaTime) override;
 

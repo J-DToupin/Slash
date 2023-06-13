@@ -4,6 +4,7 @@
 #include "Characters/Enemy/Enemy.h"
 
 #include "AIController.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/HealthBarComponent.h"
@@ -55,6 +56,7 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint,  AActor* Hitter)
 	Super::GetHit_Implementation(ImpactPoint, Hitter);
 	ClearPatrolTimer();
 	ClearAttackTimer();
+	
 }
 
 void AEnemy::SetVisibilityTargetArrow_Implementation(bool bIsVisible)
@@ -122,12 +124,19 @@ void AEnemy::BeginPlay()
 
 	Tags.Add(FName("EnemyCharacter"));
 	
+	
+	InitializeEnemy();
+}
+
+void AEnemy::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
 	if (PawnSensingComponent)
 	{
 		PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::PawnSeen);
 		
 	}
-	InitializeEnemy();
 }
 
 void AEnemy::PawnSeen(APawn* Target)
@@ -225,12 +234,15 @@ void AEnemy::InitializeEnemy()
 {
 	AiController = Cast<AAIController>(GetController());
 	SetAIMoveToTarget(PatrolTarget);
-	
-	AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
-	DefaultWeapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
+
+	if (AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass))
+	{
+		DefaultWeapon->Equip(GetMesh(), FName("WeaponSocket"), this, this);
+		EquippedWeapon = DefaultWeapon;	
+	}
 	CharacterEquipState = ECharacterEquipState::ECS_EquippedOneHandedWeapon;
 	ActionState = EActionState::EAS_Unoccupied;
-	EquippedWeapon = DefaultWeapon;
+	
 }
 
 void AEnemy::CheckCombatTarget()
@@ -281,9 +293,10 @@ void AEnemy::SetAIMoveToTarget(const AActor* Target) const
 	
 	FAIMoveRequest MoveRequest;
 	MoveRequest.SetGoalActor(Target);
-	MoveRequest.SetAcceptanceRadius(60.f);
+	MoveRequest.SetAcceptanceRadius(AcceptanceRadius);
 
 	// FNavPathSharedPtr pointer qui store les data de Moveto
+	
 	AiController->MoveTo(MoveRequest);
 	
 }

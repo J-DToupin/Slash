@@ -5,10 +5,16 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Characters/Player/SlashCharacter.h"
+#include "HUD/PlayerOverlay.h"
+#include "HUD/SlashHUD.h"
 
 ASlashController::ASlashController()
 {
-	
+	const ASlashHUD* SlashHUD = Cast<ASlashHUD>(GetHUD());
+	if (SlashHUD)
+	{
+		PlayerOverlay = SlashHUD->GetPlayerOverlay();
+	}
 }
 
 void ASlashController::BeginPlay()
@@ -19,9 +25,12 @@ void ASlashController::BeginPlay()
 	{
 		Subsystem->AddMappingContext(InputMappingContext,0);
 	}
-
+	
 	SlashCharacter = Cast<ASlashCharacter>(GetCharacter());
+	
 }
+
+
 
 void ASlashController::Move(const FInputActionValue& Value)
 {
@@ -87,6 +96,18 @@ void ASlashController::Dodge()
 	SlashCharacter->Dodge();
 }
 
+void ASlashController::Aim()
+{
+	SlashCharacter->Aim();
+	OnAimActionPress.Broadcast(nullptr, this, true);
+}
+
+void ASlashController::OffAim()
+{
+	SlashCharacter->OffAim();
+	OnAimActionPress.Broadcast(nullptr, this, false);
+}
+
 void ASlashController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -104,5 +125,7 @@ void ASlashController::SetupInputComponent()
 		Input->BindAction(DodgeAction, ETriggerEvent::Started, this, &ASlashController::Dodge);
 
 		Input->BindAction(TargetAction, ETriggerEvent::Started, this, &ASlashController::SelectTarget);
+		Input->BindAction(AimAction, ETriggerEvent::Started, this, &ASlashController::Aim);
+		Input->BindAction(AimAction, ETriggerEvent::Completed, this, &ASlashController::OffAim);
 	}
 }

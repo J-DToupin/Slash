@@ -10,6 +10,8 @@
  * 
  */
 
+class UImage;
+class UAttributeComponent;
 class UProgressBar;
 class UTextBlock;
 
@@ -28,22 +30,28 @@ public:
 
 	void SetSoulText(int32 Soul);
 
+	void HiddenCrossHair() const;
+	void ShowCrossHair() const;
+
 protected:
 	virtual void NativeConstruct() override;
 
 private:
 
 	UFUNCTION()
-	void OnHealthChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, float Heath, float Delta);
+	void OnHealthChanged(AActor* InstigatorActor, UAttributeComponent* OwnimComp, float Heath, float Delta);
 
 	UFUNCTION()
-	void OnStaminaChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, float Stamina, float Delta);
+	void OnStaminaChanged(AActor* InstigatorActor, UAttributeComponent* OwnimComp, float Stamina, float Delta);
 
 	UFUNCTION()
-	void OnSoulChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, int32 Soul, int32 Delta);
+	void OnSoulChanged(AActor* InstigatorActor, UAttributeComponent* OwnimComp, int32 Soul, int32 Delta);
 
 	UFUNCTION()
-	void OnGoldChanged(AActor* instigatorActor, UAttributeComponent* OwnimComp, int32 Gold, int32 Delta);
+	void OnGoldChanged(AActor* InstigatorActor, UAttributeComponent* OwnimComp, int32 Gold, int32 Delta);
+
+	UFUNCTION()
+	void OnAimActionPress(AActor* InstigatorActor, ASlashController* OwinComp, bool Press);
 	
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UProgressBar> HeathProgressBar;
@@ -56,5 +64,8 @@ private:
 	
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UTextBlock> SoulText;
+
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UImage> CrossHair;
 	
 };
