@@ -51,7 +51,7 @@ private:
 	void OnGoldChanged(AActor* InstigatorActor, UAttributeComponent* OwnimComp, int32 Gold, int32 Delta);
 
 	UFUNCTION()
-	void OnAimActionPress(AActor* InstigatorActor, ASlashController* OwinComp, bool Press);
+	void OnAimActionPress(ASlashController* OwningComp, bool Press);
 	
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UProgressBar> HeathProgressBar;

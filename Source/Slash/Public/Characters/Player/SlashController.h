@@ -12,8 +12,8 @@ struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAimActionPress, AActor*, instigatorActor, ASlashController*, OwinComp, bool, Press);
-
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAimActionPress, AActor*, InstigatorActor, ASlashController*, OwningComp, bool, Press);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAimActionPressSignature, class ASlashController*, bool);
 
 UCLASS()
 class SLASH_API ASlashController : public APlayerController
@@ -53,15 +53,18 @@ class SLASH_API ASlashController : public APlayerController
 	UPROPERTY()
 	TObjectPtr<UPlayerOverlay> PlayerOverlay;
 
+	bool IsAiming{};
+
 public:
 	ASlashController();
 
-	UPROPERTY()
-	FOnAimActionPress OnAimActionPress;
+	
+	FOnAimActionPressSignature OnAimActionPressDelegate;
 
 protected:
 	virtual void BeginPlay() override;
-	
+	void DefaultMove(const FInputActionValue& Value);
+
 
 	/**
  * Input function

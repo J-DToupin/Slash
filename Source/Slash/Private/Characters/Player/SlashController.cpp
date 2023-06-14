@@ -5,7 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Characters/Player/SlashCharacter.h"
-#include "HUD/PlayerOverlay.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/SlashHUD.h"
 
 ASlashController::ASlashController()
@@ -31,6 +31,18 @@ void ASlashController::BeginPlay()
 }
 
 
+void ASlashController::DefaultMove(const FInputActionValue& Value)
+{
+	const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
+
+	//find out which way is forward
+	const FVector DirectionForward = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	//find out which way is right
+	const FVector DirectionRight = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		
+	SlashCharacter->AddMovementInput(DirectionRight, Value[0]);
+	SlashCharacter->AddMovementInput(DirectionForward, Value[1]);
+}
 
 void ASlashController::Move(const FInputActionValue& Value)
 {
@@ -41,16 +53,15 @@ void ASlashController::Move(const FInputActionValue& Value)
 	
 	if (Value.GetMagnitude() != 0.0f)
 	{
-		const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
-
-		//find out which way is forward
-		const FVector DirectionForward = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		//find out which way is right
-		const FVector DirectionRight = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		
-		SlashCharacter->AddMovementInput(DirectionRight, Value[0]);
-		SlashCharacter->AddMovementInput(DirectionForward, Value[1]);
+		if (IsAiming)
+		{
+			SlashCharacter->AddMovementInput(SlashCharacter->GetActorForwardVector(), Value[1]);
+			SlashCharacter->AddMovementInput(SlashCharacter->GetActorRightVector(), Value[0]);
+		}
+		else
+		{
+			DefaultMove(Value);
+		}
 		
 	}
 }
@@ -99,13 +110,19 @@ void ASlashController::Dodge()
 void ASlashController::Aim()
 {
 	SlashCharacter->Aim();
-	OnAimActionPress.Broadcast(nullptr, this, true);
+	IsAiming = true;
+	SlashCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
+	SlashCharacter->bUseControllerRotationYaw = true;
+	OnAimActionPressDelegate.Broadcast(this, IsAiming);
 }
 
 void ASlashController::OffAim()
 {
 	SlashCharacter->OffAim();
-	OnAimActionPress.Broadcast(nullptr, this, false);
+	IsAiming = false;
+	SlashCharacter->GetCharacterMovement()->bOrientRotationToMovement = true;
+	SlashCharacter->bUseControllerRotationYaw = false;
+	OnAimActionPressDelegate.Broadcast(this, IsAiming);
 }
 
 void ASlashController::SetupInputComponent()

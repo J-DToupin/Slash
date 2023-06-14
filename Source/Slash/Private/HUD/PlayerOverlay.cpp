@@ -76,7 +76,7 @@ void UPlayerOverlay::NativeConstruct()
 
 	if (SlashController)
 	{
-		SlashController->OnAimActionPress.AddDynamic(this, &UPlayerOverlay::OnAimActionPress);
+		SlashController->OnAimActionPressDelegate.AddUObject(this, &UPlayerOverlay::OnAimActionPress);
 	}
 
 	HiddenCrossHair();
@@ -103,7 +103,7 @@ void UPlayerOverlay::OnGoldChanged(AActor* InstigatorActor, UAttributeComponent*
 	SetGoldText(Gold);
 }
 
-void UPlayerOverlay::OnAimActionPress(AActor* InstigatorActor, ASlashController* OwinComp, bool Press)
+void UPlayerOverlay::OnAimActionPress(ASlashController* OwningComp, bool Press)
 {
 	
 	if (Press)
